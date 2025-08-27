@@ -14,119 +14,6 @@ use DB;
 
 class RejectInOutController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    // public function index($id)
-    // {
-    //     $orderInfo = MasterPlan::selectRaw("
-    //             master_plan.id as id,
-    //             master_plan.tgl_plan as tgl_plan,
-    //             REPLACE(master_plan.sewing_line, '_', ' ') as sewing_line,
-    //             act_costing.kpno as ws_number,
-    //             act_costing.styleno as style_name,
-    //             mastersupplier.supplier as buyer_name,
-    //             so_det.styleno_prod as reff_number,
-    //             master_plan.color as color,
-    //             so_det.size as size,
-    //             so.qty as qty_order,
-    //             CONCAT(masterproduct.product_group, ' - ', masterproduct.product_item) as product_type
-    //         ")
-    //         ->leftJoin('act_costing', 'act_costing.id', '=', 'master_plan.id_ws')
-    //         ->leftJoin('so', 'so.id_cost', '=', 'act_costing.id')
-    //         ->leftJoin('so_det', 'so_det.id_so', '=', 'so.id')
-    //         ->leftJoin('mastersupplier', 'mastersupplier.id_supplier', '=', 'act_costing.id_buyer')
-    //         ->leftJoin('master_size_new', 'master_size_new.size', '=', 'so_det.size')
-    //         ->leftJoin('masterproduct', 'masterproduct.id', '=', 'act_costing.id_product')
-    //         ->where('so_det.cancel', 'N')
-    //         ->where('master_plan.cancel', 'N')
-    //         ->where('master_plan.id', $id)
-    //         ->first();
-
-    //     $orderWsDetailsSql = MasterPlan::selectRaw("
-    //             master_plan.id as id,
-    //             master_plan.tgl_plan as tgl_plan,
-    //             master_plan.color as color,
-    //             mastersupplier.supplier as buyer_name,
-    //             act_costing.styleno as style_name,
-    //             mastersupplier.supplier as buyer_name
-    //         ")
-    //         ->leftJoin('act_costing', 'act_costing.id', '=', 'master_plan.id_ws')
-    //         ->leftJoin('so', 'so.id_cost', '=', 'act_costing.id')
-    //         ->leftJoin('so_det', 'so_det.id_so', '=', 'so.id')
-    //         ->leftJoin('mastersupplier', 'mastersupplier.id_supplier', '=', 'act_costing.id_buyer')
-    //         ->leftJoin('master_size_new', 'master_size_new.size', '=', 'so_det.size')
-    //         ->leftJoin('masterproduct', 'masterproduct.id', '=', 'act_costing.id_product')
-    //         ->where('so_det.cancel', 'N')
-    //         ->where('master_plan.cancel', 'N');
-    //         if (Auth::user()->Groupp != "ALLSEWING") {
-    //             $orderWsDetailsSql->where('master_plan.sewing_line', Auth::user()->username);
-    //         }
-    //     $orderWsDetails = $orderWsDetailsSql->where('act_costing.kpno', $orderInfo->ws_number)
-    //         ->where('master_plan.tgl_plan', $orderInfo->tgl_plan)
-    //         ->groupBy(
-    //             'master_plan.id',
-    //             'master_plan.tgl_plan',
-    //             'master_plan.color',
-    //             'mastersupplier.supplier',
-    //             'act_costing.styleno',
-    //             'mastersupplier.supplier'
-    //         )->get();
-
-    //     return view('production-panel', ['orderInfo' => $orderInfo, 'orderWsDetails' => $orderWsDetails]);
-    // }
-
-    public function getMasterPlan(Request $request) {
-        $additionalQuery = "";
-        if ($request->date) {
-            $additionalQuery .= " AND master_plan.tgl_plan = '".$request->date."' ";
-        }
-        if ($request->line) {
-            $additionalQuery .= " AND master_plan.sewing_line = '".$request->line."' ";
-        }
-
-        $masterPlans = MasterPlan::selectRaw('
-                master_plan.id,
-                master_plan.tgl_plan as tanggal,
-                master_plan.id_ws as id_ws,
-                act_costing.kpno as no_ws,
-                act_costing.styleno as style,
-                master_plan.color as color
-            ')->
-            leftJoin('act_costing', 'act_costing.id', '=', 'master_plan.id_ws')->
-            whereRaw('
-                master_plan.cancel != "Y"
-                '.$additionalQuery.'
-            ')->
-            get();
-
-        return $masterPlans;
-    }
-
-    public function getSize(Request $request) {
-        if ($request->master_plan) {
-            $sizes = MasterPlan::selectRaw("
-                so_det.id,
-                so_det.color,
-                so_det.size
-            ")->
-            leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
-            leftJoin("so", "so.id_cost", "=", "act_costing.id")->
-            leftJoin("so_det", "so_det.id_so", "=", "so.id")->
-            whereRaw("master_plan.id = '".$request->master_plan."'")->
-            whereRaw("so_det.color = master_plan.color")->
-            groupBy("so_det.color", "so_det.size")->
-            orderBy("so_det.id")->
-            get();
-
-            return $sizes;
-        }
-
-        return null;
-    }
-
     public function getDefectType(Request $request) {
         $additionalQuery = "";
         if ($request->date) {
@@ -202,6 +89,21 @@ class RejectInOutController extends Controller
             get();
 
         return $rejects;
+    }
+
+    public function getRejectOut() {
+        RejectInOut::selectRaw("
+            output_reject_in_out.kode_numbering,
+            output_reject_in_out.updated_at,
+            output_reject_in_out.output_type,
+            act_costing.kpno,
+            so_det.color,
+            userpassword.username,
+        ")->
+        leftJoin("so_det", "so_det.id", "=", "output_reject_in_out.so_det_id")->
+        leftJoin("so", "so.id", "=", "so_det.id_so")->
+        leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
+        leftJoin("userpassword", "userpassword.line_id", "=", "output_reject_in_out.id_cost");
     }
 
     public function getRejectInOutDaily(Request $request) {

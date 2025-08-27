@@ -33,7 +33,17 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4" wire:ignore>
-                            <input type="text" class="qty-input border h-100" id="scannedItemRejectIn" name="scannedItemRejectIn">
+                            <div class="d-flex flex-column gap-3 h-100">
+                                <input type="text" class="qty-input border h-100" id="scannedItemRejectIn" name="scannedItemRejectIn">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="text-center mb-0">OUTSTANDING CHECK</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="text-center"><b>{{ $totalRejectIn }}</b></h5>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-8">
                             <div class="row g-3 mb-3">
@@ -56,14 +66,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                {{-- <div class="col-md-2">
-                                    <select class="form-select form-select-sm" name="rejectInShowPage" id="reject-in-show-page" wire:model="rejectInShowPage">
-                                        <option value="10">Show 10</option>
-                                        <option value="25">Show 25</option>
-                                        <option value="50">Show 50</option>
-                                        <option value="100">Show 100</option>
-                                    </select>
-                                </div> --}}
                                 <div class="col-md-3 d-none">
                                     <button type="button" class="btn btn-sm btn-rework w-100 fw-bold" wire:click="saveAllRejectIn">ALL REJECT OUT</button>
                                 </div>
@@ -81,9 +83,6 @@
                                             <th>Type</th>
                                             <th>Qty</th>
                                             <th>Dept.</th>
-                                            {{-- <th>Waktu</th> --}}
-                                            {{-- <th><input class="form-check-input" type="checkbox" value="" id="reject-in-select-all" onclick="rejectInSelectAll(this)" style="scale: 1.3"></th>
-                                            <th>IN</th> --}}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -112,20 +111,11 @@
                                                     <td>{{ $rejectIn->defect_type }}</td>
                                                     <td>{{ $rejectIn->reject_qty }}</td>
                                                     <td class="fw-bold {{ $rejectIn->output_type == 'qc' ? 'text-danger' : ($rejectIn->output_type == 'qcf' ? 'text-pink' : 'text-success') }}">{{ $rejectIn->output_type == "packing" ? "FINISHING" : strtoupper($rejectIn->output_type) }}</td>
-                                                    {{-- <td>{{ $rejectIn->updated_at }}</td> --}}
-                                                    {{-- <td><input class="form-check-input" type="checkbox" value="{{ $rejectIn->master_plan_id.'-'.$rejectIn->defect_type_id.'-'.$rejectIn->so_det_id }}" style="scale: 1.3" {{ $thisRejectInChecked && $thisRejectInChecked->count() > 0 ? "checked" : ""  }} onchange="rejectInCheck(this)"></td>
-                                                    <td><button class="btn btn-sm btn-defect fw-bold" wire:click='preSaveSelectedRejectIn("{{ $rejectIn->master_plan_id.'-'.$rejectIn->defect_type_id.'-'.$rejectIn->so_det_id }}")'>IN</button></td> --}}
                                                 </tr>
                                             @endforeach
                                         @endif
                                     </tbody>
                                 </table>
-                                {{-- {{ $rejectInList->links() }} --}}
-                                {{-- <div class="row justify-content-end mt-3">
-                                    <div class="col-md-3">
-                                        <button class="btn btn-defect btn-sm fw-bold w-100" wire:click='saveCheckedRejectIn()'>CHECKED REJECT IN</button>
-                                    </div>
-                                </div> --}}
                             </div>
                         </div>
                     </div>
@@ -140,7 +130,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title text-light text-center fw-bold">{{ Auth::user()->Groupp." " }}REJECT OUT</h5>
                         <div class="d-flex align-items-center">
-                            <h5 class="px-3 mb-0 text-light">Total : <b>{{ $totalRejectOut }}</b></h5>
+                            <h5 class="px-3 mb-0 text-light">Total : <b></b></h5>
                             <button class="btn btn-dark float-end" wire:click="refreshComponent()">
                                 <i class="fa-solid fa-rotate"></i>
                             </button>
@@ -148,223 +138,75 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4" wire:ignore>
-                            <input type="text" class="qty-input border h-100" id="scannedItemRejectOut" name="scannedItemRejectOut">
+                    <div class="d-flex justify-content-center">
+                        <div class="d-inline-flex gap-1 bg-white border p-1 rounded mb-3">
+                            <button class="btn btn-primary btn-sm" onclick="">WIP</button>
+                            <button class="btn btn-light btn-sm text-primary" onclick="">Sent</button>
                         </div>
-                        <div class="col-md-8">
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <input type="text" class="form-control form-control-sm" wire:model="rejectOutSearch" placeholder="Search...">
-                                </div>
-                                <div class="col-md-4">
-                                    <select class="form-select form-select-sm" name="rejectOutOutputType" id="reject-out-output-type" wire:model="rejectOutOutputType">
-                                        <option value="all">ALL</option>
-                                        <option value="qc">QC</option>
-                                        {{-- <option value="qcf">QC FINISHING</option> --}}
-                                        <option value="packing">FINISHING</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <select class="form-select form-select-sm" name="rejectOutLine" id="reject-out-line" wire:model="rejectOutLine">
-                                        <option value="" selected>Pilih Line</option>
-                                        @foreach ($lines as $line)
-                                            <option value="{{ $line->username }}">{{ str_replace("_", " ", $line->username) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                {{-- <div class="col-md-2">
-                                    <select class="form-select form-select-sm" name="rejectOutShowPage" id="reject-out-show-page" wire:model="rejectOutShowPage">
-                                        <option value="10">Show 10</option>
-                                        <option value="25">Show 25</option>
-                                        <option value="50">Show 50</option>
-                                        <option value="100">Show 100</option>
-                                    </select>
-                                </div> --}}
-                                <div class="col-md-3 d-none">
-                                    <button type="button" class="btn btn-sm btn-rework w-100 fw-bold" wire:click="saveAllRejectOut">ALL REJECT OUT</button>
-                                </div>
-                            </div>
-                            <div class="table-responsive-md" style="max-height: 400px; overflow-y: auto;">
-                                <table class="table table-sm table-bordered w-100">
-                                    <thead>
-                                        <tr class="text-center align-middle">
-                                            <th>No.</th>
-                                            <th>Kode</th>
-                                            <th>Waktu</th>
-                                            <th>Line</th>
-                                            <th>Master Plan</th>
-                                            <th>Size</th>
-                                            <th>Type</th>
-                                            <th>Qty</th>
-                                            <th>Dept.</th>
-                                            {{-- <th>Waktu</th> --}}
-                                            {{-- <th><input class="form-check-input" type="checkbox" value="" id="reject-out-select-all" onchange="rejectOutSelectAll(this)" style="scale: 1.3"></th>
-                                            <th>IN</th> --}}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if (count($rejectOutList) < 1)
-                                            <tr class="text-center align-middle">
-                                                <td colspan="9" class="text-center">Data tidak ditemukan</td>
-                                            </tr>
-                                        @else
-                                            @foreach ($rejectOutList as $rejectOut)
-                                                @php
-                                                    $thisRejectOutChecked = null;
-
-                                                    if ($rejectOutSelectedList) {
-                                                        $thisRejectOutChecked = $rejectOutSelectedList->filter(function ($item) use ($rejectOut) {
-                                                            return $item['master_plan_id'] == $rejectOut->master_plan_id && $item['defect_type_id'] == $rejectOut->defect_type_id && $item['so_det_id'] == $rejectOut->so_det_id;
-                                                        });
-                                                    }
-                                                @endphp
-                                                <tr class="text-center align-middle">
-                                                    <td>{{ $loop->index+1 }}</td>
-                                                    <td>{{ $rejectOut->kode_numbering }}</td>
-                                                    <td>{{ $rejectOut->reject_time }}</td>
-                                                    <td>{{ strtoupper(str_replace("_", " ", $rejectOut->sewing_line)) }}</td>
-                                                    <td>{{ $rejectOut->ws }}<br>{{ $rejectOut->style }}<br>{{ $rejectOut->color }}</td>
-                                                    <td>{{ $rejectOut->size }}</td>
-                                                    <td>{{ $rejectOut->defect_type }}</td>
-                                                    <td>{{ $rejectOut->reject_qty }}</td>
-                                                    <td class="fw-bold {{ $rejectOut->output_type == 'qc' ? 'text-danger' : ($rejectOut->output_type == 'qcf' ? 'text-pink' : 'text-success') }}">{{ $rejectOut->output_type == "packing" ? "FINISHING" : strtoupper($rejectOut->output_type) }}</td>
-                                                    {{-- <td>{{ $rejectOut->updated_at }}</td> --}}
-                                                    {{-- <td><input class="form-check-input" type="checkbox" value="{{ $rejectOut->master_plan_id.'-'.$rejectOut->defect_type_id.'-'.$rejectOut->so_det_id }}" style="scale: 1.3" {{ $thisRejectOutChecked && $thisRejectOutChecked->count() > 0 ? "checked" : ""  }} onchange="rejectOutCheck(this)"></td>
-                                                    <td><button class="btn btn-sm btn-rework fw-bold" wire:click="preSaveSelectedRejectOut('{{ $rejectOut->master_plan_id.'-'.$rejectOut->defect_type_id.'-'.$rejectOut->so_det_id }}')">OUT</button></td> --}}
-                                                </tr>
-                                            @endforeach
-                                        @endif
-                                    </tbody>
-                                </table>
-                                {{-- {{ $rejectOutList->links() }} --}}
-                                {{-- <div class="row justify-content-end mt-3">
-                                    <div class="col-md-3">
-                                        <button class="btn btn-rework btn-sm fw-bold w-100" wire:click='saveCheckedRejectOut()'>CHECKED REJECT OUT</button>
-                                    </div>
-                                </div> --}}
-                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Action</th>
+                                        <th>Kode</th>
+                                        <th>Waktu</th>
+                                        <th>Dept.</th>
+                                        <th>Line</th>
+                                        <th>Worksheet</th>
+                                        <th>Style</th>
+                                        <th>Color</th>
+                                        <th>Size</th>
+                                        <th>Quality Check</th>
+                                        <th>Grade</th>
+                                        <th>Defect Type Check</th>
+                                        <th>Defect Area Check</th>
+                                        <th>Gambar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td>TOTAL</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        {{-- All Defect Legacy --}}
-        {{-- <div class="col-12 col-md-12 {{ $mode != "in-out" ? 'd-none' : ''}}">
-            <div class="card">
-                <div class="card-header bg-sb">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="card-title text-light text-center fw-bold">{{ Auth::user()->Groupp." " }}Defect In Out Summary</h5>
-                        <div class="d-flex align-items-center">
-                            <h5 class="px-3 mb-0 text-light">Total : <b>{{ $totalRejectInOut }}</b></h5>
-                            <button class="btn btn-dark float-end" wire:click="refreshComponent()">
-                                <i class="fa-solid fa-rotate"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-10">
-                            <input type="text" class="form-control form-control-sm my-3" wire:model="rejectInOutSearch" placeholder="Search...">
-                        </div>
-                        <div class="col-md-2">
-                            <select class="form-select form-select-sm my-3" name="rejectInOutShowPage" id="reject-in-out-show-page" wire:model="rejectInOutShowPage">
-                                <option value="10">Show 10</option>
-                                <option value="25">Show 25</option>
-                                <option value="50">Show 50</option>
-                                <option value="100">Show 100</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3 d-none">
-                            <button type="button" class="btn btn-sm btn-rework w-100 my-3 fw-bold" wire:click="saveAllRejectIn">ALL REJECT OUT</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered w-100">
-                            <thead>
-                                <tr class="text-center align-middle">
-                                    <th>No.</th>
-                                    <th>Date IN</th>
-                                    <th>Time IN</th>
-                                    <th>Date OUT</th>
-                                    <th>Time OUT</th>
-                                    <th>Line</th>
-                                    <th>Department</th>
-                                    <th>QR</th>
-                                    <th>No. WS</th>
-                                    <th>Style</th>
-                                    <th>Color</th>
-                                    <th>Size</th>
-                                    <th>Type</th>
-                                    <th>Area</th>
-                                    <th>Image</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if ($rejectInOutList->count() < 1)
-                                    <tr class="text-center align-middle">
-                                        <td colspan="16" class="text-center">Data tidak ditemukan</td>
-                                    </tr>
-                                @else
-                                    @foreach ($rejectInOutList as $rejectInOut)
-                                        @php
-                                            $show = false;
-
-                                            $currentDefect = null;
-
-                                            if ($rejectInOut->output_type == "packing") {
-                                                $currentDefect = $rejectInOut->defectPacking;
-                                            } else {
-                                                $currentDefect = $rejectInOut->defect;
-                                            }
-
-                                            if (
-                                                str_contains(strtolower($currentDefect ? $currentDefect->kode_numbering : 0), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower(($currentDefect ? $currentDefect->soDet->so->actCosting->kpno : '')), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower(($currentDefect ? $currentDefect->soDet->so->actCosting->styleno : '')), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower(($currentDefect ? $currentDefect->soDet->color : '')), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower(($currentDefect ? $currentDefect->soDet->size : '')), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower(($currentDefect ? $currentDefect->defectType->defect_type : '')), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower(($currentDefect ? $currentDefect->defectArea->defect_area : '')), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower(str_replace("_", " ", $currentDefect && $currentDefect->masterPlan ? $currentDefect->masterPlan->sewing_line : '')), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower($rejectInOut->status == "reworked" ? "DONE" : 'PROCESS'), strtolower($rejectInOutSearch)) ||
-                                                str_contains(strtolower($rejectInOut->output_type), strtolower($rejectInOutSearch))
-                                            ) {
-                                                $show = true;
-                                            }
-                                        @endphp
-                                        @if ($show)
-                                            <tr class="text-center align-middle">
-                                                <td class="text-nowrap">{{ $rejectInOutList->firstItem() + $loop->index }}</td>
-                                                <td class="text-nowrap">{{ $rejectInOut->created_at ? date('Y-m-d', strtotime($rejectInOut->created_at)) : '' }}</td>
-                                                <td class="text-nowrap">{{ $rejectInOut->created_at ? date('H:i:s', strtotime($rejectInOut->created_at)) : '' }}</td>
-                                                <td class="text-nowrap">{{ $rejectInOut->reworked_at ? date('Y-m-d', strtotime($rejectInOut->reworked_at)) : '' }}</td>
-                                                <td class="text-nowrap">{{ $rejectInOut->reworked_at ? date('H:i:s', strtotime($rejectInOut->reworked_at)) : '' }}</td>
-                                                <td class="text-nowrap">{{ strtoupper(str_replace("_", " ", $currentDefect ? $currentDefect->masterPlan->sewing_line : null)) }}</td>
-                                                <td class="text-nowrap fw-bold {{ $rejectInOut->output_type == 'qc' ? 'text-danger' : 'text-success' }}">{{ strtoupper($rejectInOut->output_type) }}</td>
-                                                <td class="text-nowrap">{{ $currentDefect ? $currentDefect->kode_numbering : null }}</td>
-                                                <td class="text-nowrap">{{ $currentDefect ? $currentDefect->soDet->so->actCosting->kpno : null }}</td>
-                                                <td class="text-nowrap">{{ $currentDefect ? $currentDefect->soDet->so->actCosting->styleno : null }}</td>
-                                                <td class="text-nowrap">{{ $currentDefect ? $currentDefect->soDet->color : null }}</td>
-                                                <td class="text-nowrap">{{ $currentDefect ? $currentDefect->soDet->size : null }}</td>
-                                                <td class="text-nowrap">{{ $currentDefect ? $currentDefect->defectType->defect_type : null }}</td>
-                                                <td class="text-nowrap">{{ $currentDefect ? $currentDefect->defectArea->defect_area : null }}</td>
-                                                <td class="text-nowrap"><button class="btn btn-dark" wire:click="showRejectAreaImage('{{$currentDefect && $currentDefect->masterPlan ? $currentDefect->masterPlan->gambar : ''}}', {{$currentDefect ? $currentDefect->reject_area_x : ''}}, {{$currentDefect ? $currentDefect->reject_area_y : ''}})"><i class="fa fa-image"></i></button></td>
-                                                <td class="text-nowrap">{{ $rejectInOut->status == "reworked" ? "DONE" : ($rejectInOut->status == "defect" ? "PROCESS" : '-') }}</td>
-                                            </tr>
-                                        @endif
-                                    @endforeach
-                                @endif
-                            </tbody>
-                        </table>
-                        {{ $rejectInOutList->links() }}
-                    </div>
-                </div>
-            </div>
-        </div> --}}
 
         {{-- All Defect --}}
         <div class="col-12 col-md-12 {{ $mode != "in-out" ? 'd-none' : ''}}">
@@ -421,7 +263,7 @@
     {{-- Show Defect Area --}}
     <div class="show-defect-area" id="show-defect-area" wire:ignore>
         <div class="position-relative d-flex flex-column justify-content-center align-items-center">
-            <button type="button" class="btn btn-lg btn-light rounded-0 hide-defect-area-img" onclick="onHideDefectAreaImage()">
+            <button type="button" class="btn btn-lg btn-light rounded-0 hide-defect-area-img" onclick="onHideRejectAreaImage()">
                 <i class="fa-regular fa-xmark fa-lg"></i>
             </button>
             <div class="defect-area-img-container mx-auto">
@@ -638,7 +480,7 @@
                                                         </select>
                                                     </div>
                                                     <div class="w-25">
-                                                        <button type="button" wire:click="selectRejectAreaPosition({{ $i }})" class="btn btn-dark w-100">
+                                                        <button type="button" wire:click="selectRejectAreaPosition({{ $i }})" id="select-reject-area-position-{{ $i }}" class="btn btn-dark w-100">
                                                             <i class="fa-regular fa-image"></i>
                                                         </button>
                                                     </div>
@@ -681,9 +523,9 @@
     <script src="{{ asset('datatables/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
 
     <script>
+        // Init Reject Modal Select2
         function initRejectSelect2() {
             $('.reject-modal-select2').each(function () {
-                // Destroy if already initialized
                 if ($(this).hasClass("select2-hidden-accessible")) {
                     return;
                 }
@@ -698,7 +540,7 @@
             });
         }
 
-        // Livewire v2 way: listen to a custom event
+        // Reinit Reject Modal Select2
         Livewire.on('reinitSelect2', () => {
             setTimeout(() => {
                 initRejectSelect2();
@@ -727,120 +569,6 @@
                 width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
                 placeholder: $( this ).data( 'placeholder' ),
                 dropdownParent: $('#reject-in-out-modal')
-            });
-
-            $('#select-reject-in-line').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectInLine = $('#select-reject-in-line').val();
-
-                @this.set('rejectInLine', selectedRejectInLine);
-
-                getMasterPlanData();
-
-                getDefectType();
-                getDefectArea();
-            });
-
-            $('#select-reject-out-line').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectOutLine = $('#select-reject-out-line').val();
-
-                @this.set('rejectOutLine', selectedRejectOutLine);
-
-                getMasterPlanData("out");
-
-                getDefectType("out");
-                getDefectArea("out");
-            });
-
-            $('#select-reject-in-master-plan').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectInMasterPlan = $('#select-reject-in-master-plan').val();
-
-                @this.set('rejectInSelectedMasterPlan', selectedRejectInMasterPlan);
-
-                getSizeData();
-
-                getDefectType();
-                getDefectArea();
-            });
-
-            $('#select-reject-out-master-plan').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectOutMasterPlan = $('#select-reject-out-master-plan').val();
-
-                @this.set('rejectOutSelectedMasterPlan', selectedRejectOutMasterPlan);
-
-                getSizeData("out");
-
-                getDefectType("out");
-                getDefectArea("out");
-            });
-
-            $('#select-reject-in-size').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectInSize = $('#select-reject-in-size').val();
-
-                @this.set('rejectInSelectedSize', selectedRejectInSize);
-
-                getDefectType();
-                getDefectArea();
-            });
-
-            $('#select-reject-out-size').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectOutSize = $('#select-reject-out-size').val();
-
-                @this.set('rejectOutSelectedSize', selectedRejectOutSize);
-
-                getDefectType("out");
-                getDefectArea("out");
-            });
-
-            $('#select-reject-in-type').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectInType = $('#select-reject-in-type').val();
-
-                @this.set('rejectInSelectedType', selectedRejectInType);
-
-                getDefectArea();
-            });
-
-            $('#select-reject-out-type').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectOutType = $('#select-reject-out-type').val();
-
-                @this.set('rejectOutSelectedType', selectedRejectOutType);
-
-                getDefectArea("out");
-            });
-
-            $('#select-reject-in-area').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectInType = $('#select-reject-in-area').val();
-
-                @this.set('rejectInSelectedArea', selectedRejectInType);
-
-                getDefectType();
-            });
-
-            $('#select-reject-out-area').on('change', function (e) {
-                Livewire.emit("loadingStart");
-
-                let selectedRejectOutType = $('#select-reject-out-area').val();
-
-                @this.set('rejectOutSelectedArea', selectedRejectOutType);
-
-                getDefectType("out");
             });
 
             $('#button-in').on('click', async function (e) {
@@ -884,21 +612,8 @@
             this.value = '';
         });
 
-        // REJECT OUT
-        var scannedItemRejectOut = document.getElementById("scannedItemRejectOut");
-        scannedItemRejectOut.addEventListener("change", async function () {
-            @this.scannedRejectOut = this.value;
-
-            // submit
-            @this.submitRejectOut();
-
-            this.value = '';
-        });
-
         // init scan
         Livewire.on('qrInputFocus', async (mode) => {
-            console.log(mode);
-
             if (mode == "in") {
                 document.getElementById('scannedItemRejectIn').focus();
                 document.getElementById('button-out').disabled = false;
@@ -908,222 +623,7 @@
             }
         });
 
-        function getMasterPlanData(type) {
-            if (type != "in" && type != "out") {
-                type = 'in';
-            }
-            console.log(type, $("#defect-"+type+"-date").val());
-            $.ajax({
-                url: "{{ route("get-master-plan") }}",
-                method: "GET",
-                data: {
-                    date: $("#defect-"+type+"-date").val(),
-                    line: $("#select-defect-"+type+"-line").val(),
-                },
-                success: function(res) {
-                    document.getElementById("select-defect-"+type+"-master-plan").innerHTML = "";
-
-                    let selectElement = document.getElementById("select-defect-"+type+"-master-plan")
-
-                    let option = document.createElement("option");
-                    option.value = "";
-                    option.innerText = "All Master Plan";
-                    selectElement.appendChild(option);
-
-                    $("#select-defect-"+type+"-master-plan").val("").trigger("change");
-
-                    if (res && res.length > 0) {
-                        res.forEach(item => {
-                            let option = document.createElement("option");
-                            option.value = item.id;
-                            option.innerText = item.no_ws+" - "+item.style+" - "+item.color;
-
-                            selectElement.appendChild(option);
-                        });
-                    }
-                }
-            });
-        }
-
-        function getSizeData(type) {
-            if (type != "in" && type != "out") {
-                type = 'in';
-            }
-            $.ajax({
-                url: "{{ route("get-size") }}",
-                method: "GET",
-                data: {
-                    master_plan: $("#select-defect-"+type+"-master-plan").val(),
-                },
-                success: function(res) {
-                    document.getElementById("select-defect-"+type+"-size").innerHTML = "";
-
-                    let selectElement = document.getElementById("select-defect-"+type+"-size")
-
-                    let option = document.createElement("option");
-                    option.value = "";
-                    option.innerText = "Select Size";
-                    selectElement.appendChild(option);
-
-                    $("#select-defect-"+type+"-size").val("").trigger("change");
-
-                    if (res && res.length > 0) {
-                        res.forEach(item => {
-                            let option = document.createElement("option");
-                            option.value = item.id;
-                            option.innerText = item.size;
-
-                            selectElement.appendChild(option);
-                        });
-                    }
-                }
-            });
-        }
-
-        function getDefectType(type) {
-            if (type != "in" && type != "out") {
-                type = 'in';
-            }
-            $.ajax({
-                url: "{{ route("get-defect-type") }}",
-                method: "GET",
-                data: {
-                    date: $("#defect-"+type+"-date").val(),
-                    line: $("#select-defect-"+type+"-line").val(),
-                    master_plan: $("#select-defect-"+type+"-master-plan").val(),
-                    size: $("#select-defect-"+type+"-size").val(),
-                    defect_area: $("#select-defect-"+type+"-area").val(),
-                },
-                success: function(res) {
-                    document.getElementById("select-defect-"+type+"-type").innerHTML = "";
-
-                    let selectElement = document.getElementById("select-defect-"+type+"-type")
-
-                    let option = document.createElement("option");
-                    option.value = "";
-                    option.innerText = "All Defect Type";
-                    selectElement.appendChild(option);
-
-                    if (res && res.length > 0) {
-                        res.forEach(item => {
-                            let option = document.createElement("option");
-                            option.value = item.id;
-                            option.innerText = item.defect_type+' - '+item.reject_qty;
-
-                            selectElement.appendChild(option);
-                        });
-                    }
-                }
-            });
-        }
-
-        function getDefectArea(type) {
-            if (type != "in" && type != "out") {
-                type = 'in';
-            }
-            $.ajax({
-                url: "{{ route("get-defect-area") }}",
-                method: "GET",
-                data: {
-                    date: $("#defect-"+type+"-date").val(),
-                    line: $("#select-defect-"+type+"-line").val(),
-                    master_plan: $("#select-defect-"+type+"-master-plan").val(),
-                    size: $("#select-defect-"+type+"-size").val(),
-                    defect_type: $("#select-defect-"+type+"-type").val(),
-                },
-                success: function(res) {
-                    document.getElementById("select-defect-"+type+"-area").innerHTML = "";
-
-                    let selectElement = document.getElementById("select-defect-"+type+"-area");
-
-                    let option = document.createElement("option");
-                    option.value = "";
-                    option.innerText = "All Defect Area";
-                    selectElement.appendChild(option);
-
-                    if (res && res.length > 0) {
-                        res.forEach(item => {
-                            let option = document.createElement("option");
-                            option.value = item.id;
-                            option.innerText = item.defect_area+' - '+item.reject_qty;
-
-                            selectElement.appendChild(option);
-                        });
-                    }
-                }
-            });
-        }
-
-        function rejectInSelectAll(element) {
-            if (element.checked) {
-                Livewire.emit("loadingStart");
-
-                @this.selectAllRejectIn();
-            } else {
-                Livewire.emit("loadingStart");
-
-                @this.unselectAllRejectIn();
-            }
-        }
-
-        // $('#reject-in-select-all').on('change', function (e) {
-        //     if (this.checked) {
-        //         Livewire.emit("loadingStart");
-
-        //         @this.selectAllRejectIn();
-        //     } else {
-        //         Livewire.emit("loadingStart");
-
-        //         @this.unselectAllRejectIn();
-        //     }
-        // });
-
-        function rejectOutSelectAll(element) {
-            if (element.checked) {
-                Livewire.emit("loadingStart");
-
-                @this.selectAllRejectOut();
-            } else {
-                Livewire.emit("loadingStart");
-
-                @this.unselectAllRejectOut();
-            }
-        }
-
-        // $('#reject-out-select-all').on('change', function (e) {
-        //     if (this.checked) {
-        //         Livewire.emit("loadingStart");
-
-        //         @this.selectAllRejectOut("out");
-        //     } else {
-        //         Livewire.emit("loadingStart");
-
-        //         @this.unselectAllRejectOut("out");
-        //     }
-        // });
-
-        function rejectInCheck(element) {
-            Livewire.emit("loadingStart");
-
-            if (element.checked) {
-                @this.addRejectInSelectedList(element.value);
-            } else {
-                @this.removeRejectInSelectedList(element.value);
-                element.removeAttribute("checked");
-            }
-        }
-
-        function rejectOutCheck(element) {
-            Livewire.emit("loadingStart");
-
-            if (element.checked) {
-                @this.addRejectOutSelectedList(element.value);
-            } else {
-                @this.removeRejectOutSelectedList(element.value);
-                element.removeAttribute("checked");
-            }
-        }
-
+        // Reject Area Image
         function onShowRejectAreaImage(defectAreaImage, x, y) {
             Livewire.emit('showRejectAreaImage', defectAreaImage, x, y);
         }
@@ -1152,12 +652,20 @@
             defectAreaImagePointElement.style.display = 'block';
         });
 
-        function onHideDefectAreaImage() {
-            hideDefectAreaImage();
+        function onHideRejectAreaImage() {
+            hideRejectAreaImage();
 
-            Livewire.emit('hideDefectAreaImageClear');
+            Livewire.emit('hideRejectAreaImageClear');
         }
 
+        // Clear Reject In Input
+        Livewire.on('clearRejectModal', async function (defectAreaImage, x, y) {
+            $('.reject-modal-select2').each(function () {
+                $(this).val(null).trigger("change");
+            });
+        });
+
+        // Reject In Out
         let rejectInOutDatatable = $("#reject-in-out-table").DataTable({
             serverSide: true,
             processing: true,
@@ -1206,6 +714,7 @@
             $("#reject-in-out-table").DataTable().ajax.reload();
         }
 
+        // Reject In Out Detail
         let rejectInOutDetailDatatable = $("#reject-in-out-detail-table").DataTable({
             serverSide: true,
             processing: true,
@@ -1349,6 +858,7 @@
             $("#reject-in-out-modal").modal("show");
         }
 
+        // Reject In Out Export
         function exportExcel(elm) {
             elm.setAttribute('disabled', 'true');
             elm.innerText = "";

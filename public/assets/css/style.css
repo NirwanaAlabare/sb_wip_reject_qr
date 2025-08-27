@@ -643,6 +643,10 @@ input[type=number] {
     filter: invert(1);
 }
 
+button.is-invalid {
+    border: 1.5px solid var(--reject-color-sec);
+}
+
 @media (max-width:768px) {
     .login-card.card {
         max-width: 90vw;

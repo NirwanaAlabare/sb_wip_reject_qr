@@ -225,5 +225,18 @@
                 Livewire.emit('setRejectAreaPosition', rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
             });
         }
+
+        // Invalid Input
+        Livewire.on('addInvalid', async function (elementIds) {
+            for (let i = 0; i < elementIds.length; i++) {
+                $('#'+elementIds[i]).addClass("is-invalid");
+            }
+        });
+
+        Livewire.on('removeInvalid', async function () {
+            $('.is-invalid').each(() => {
+                $(this).removeClass("is-invalid");
+            });
+        });
     </script>
 @endsection

@@ -160,93 +160,12 @@ function hideFilterModal() {
 }
 
 // reject modal
-function showDefectModal() {
-    $("#defect-modal").modal("show");
-}
-
-function hideDefectModal() {
-    $("#defect-modal").modal("hide");
-}
-
-// undo modal
-function showUndoModal() {
-    $("#undo-modal").modal("show");
-}
-
-function hideUndoModal() {
-    $("#undo-modal").modal("hide");
-}
-
-// add product type modal
-function showAddProductTypeModal() {
-    $("#product-type-modal").modal("show");
-}
-
-function hideAddProductTypeModal() {
-    $("#product-type-modal").modal("hide");
-}
-
-// add defect type modal
-function showAddDefectTypeModal() {
-    $("#defect-type-modal").modal("show");
-}
-
-function hideAddDefectTypeModal() {
-    $("#defect-type-modal").modal("hide");
-}
-
-// add defect area modal
-function showAddDefectAreaModal() {
-    $("#defect-area-modal").modal("show");
-}
-
-function hideAddDefectAreaModal() {
-    $("#defect-area-modal").modal("hide");
-}
-
-// mass rework modal
-function showMassReworkModal() {
-    $("#mass-rework-modal").modal("show");
-}
-
-function hideMassReworkModal() {
-    $("#mass-rework-modal").modal("hide");
-}
-
-// all rework modal
-function showAllReworkModal() {
-    $("#all-rework-modal").modal("show");
-}
-
-function hideAllReworkModal() {
-    $("#all-rework-modal").modal("hide");
-}
-
-// reject modal
 function showRejectModal() {
     $("#reject-modal").modal("show");
 }
 
 function hideRejectModal() {
     $("#reject-modal").modal("hide");
-}
-
-// reject in modal
-function showRejectInModal() {
-    $("#reject-in-modal").modal("show");
-}
-
-function hideRejectInModal() {
-    $("#reject-in-modal").modal("hide");
-}
-
-// reject out modal
-function showRejectOutModal() {
-    $("#reject-out-modal").modal("show");
-}
-
-function hideRejectOutModal() {
-    $("#reject-out-modal").modal("hide");
 }
 
 // rework
@@ -435,102 +354,6 @@ function submitForm(e, evt) {
     });
 }
 
-// Latest Output Chart
-// var latestOutput='';
-
-// var options = {
-//     series: [
-//         {
-//             name: "High - 2013",
-//             data: [28, 29, 33, 36, 32, 32, 33]
-//         },
-//         {
-//             name: "Low - 2013",
-//             data: [12, 11, 14, 18, 17, 13, 13]
-//         }
-//     ],
-//     chart: {
-//         height: 350,
-//         type: 'line',
-//         dropShadow: {
-//             enabled: true,
-//             color: '#000',
-//             top: 18,
-//             left: 7,
-//             blur: 10,
-//             opacity: 0.2
-//         },
-//         toolbar: {
-//             show: false
-//         }
-//     },
-//     colors: ['#77B6EA', '#545454'],
-//     dataLabels: {
-//         enabled: true,
-//     },
-//     stroke: {
-//         curve: 'smooth'
-//     },
-//     grid: {
-//         borderColor: '#e7e7e7',
-//         row: {
-//             colors: ['#f3f3f3', 'transparent'],
-//             opacity: 0.5
-//         },
-//     },
-//     markers: {
-//         size: 1
-//     },
-//     xaxis: {
-//         categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-//         title: {
-//             text: 'Month'
-//         }
-//     },
-//     yaxis: {
-//         min: 5,
-//         max: 40
-//     },
-//     legend: {
-//         position: 'top',
-//         horizontalAlign: 'right',
-//         floating: true,
-//         offsetY: -25,
-//         offsetX: -5
-//     }
-// };
-
-// var chart = new ApexCharts(document.querySelector("#daily-chart"), options);
-// chart.render();
-
-// Select Defect Area
-function showSelectDefectArea(defectAreaImage) {
-    document.body.style.maxHeight = '100%';
-    document.body.style.overflow = 'hidden';
-
-    let defectAreaImageElement = document.getElementById('defect-area-img');
-    defectAreaImageElement.src = 'http://10.10.5.62:8080/erp/pages/prod_new/upload_files/'+defectAreaImage;
-
-    let selectDefectArea = document.getElementById('select-defect-area');
-    selectDefectArea.style.display = 'flex';
-    selectDefectArea.style.flexDirection = 'column';
-    selectDefectArea.style.alignItems = 'center';
-}
-
-function hideSelectDefectArea() {
-    document.body.style.maxHeight = null;
-    document.body.style.overflow = null;
-
-    let defectAreaImageElement = document.getElementById('defect-area-img');
-    defectAreaImageElement.src = '';
-
-    let selectDefectArea = document.getElementById('select-defect-area');
-    selectDefectArea.style.display = 'none';
-    selectDefectArea.style.flexDirection = null;
-    selectDefectArea.style.justifyContent = null;
-    selectDefectArea.style.alignItems = null;
-}
-
 // Select Reject Area
 function showSelectRejectArea(rejectAreaImage, x, y, index) {
     console.log("coordinates", x, y, index);
@@ -582,8 +405,8 @@ function hideSelectRejectArea() {
     selectRejectArea.style.alignItems = null;
 }
 
-// Show Defect Area Image
-function showDefectAreaImage(defectAreaImage) {
+// Show Reject Area Image
+function showRejectAreaImage(defectAreaImage) {
     document.body.style.maxHeight = '100%';
     document.body.style.overflow = 'hidden';
 
@@ -596,7 +419,7 @@ function showDefectAreaImage(defectAreaImage) {
     showDefectArea.style.alignItems = 'center';
 }
 
-function hideDefectAreaImage() {
+function hideRejectAreaImage() {
     document.body.style.maxHeight = null;
     document.body.style.overflow = null;
 
@@ -608,13 +431,6 @@ function hideDefectAreaImage() {
     showDefectArea.style.flexDirection = null;
     showDefectArea.style.justifyContent = null;
     showDefectArea.style.alignItems = null;
-}
-
-function clearOutputInputJs() {
-    if (document.getElementById('rft-input')) {
-        let rftElement = document.getElementById('rft-input');
-        rftElement.value = '';
-    }
 }
 
 // Reminder
