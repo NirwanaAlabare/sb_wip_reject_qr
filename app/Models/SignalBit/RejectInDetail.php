@@ -18,6 +18,8 @@ class RejectInDetail extends Model
         'reject_in_id',
         'reject_type_id',
         'reject_area_id',
+        'reject_area_x',
+        'reject_area_y',
         'created_at',
         'updated_at',
     ];
@@ -25,5 +27,10 @@ class RejectInDetail extends Model
     public function rejectInOut()
     {
         return $this->belongsTo(RejectInOut::class, 'reject_in_id', 'id');
+    }
+
+    public function rejectInDetailPosition()
+    {
+        return $this->hasMany(RejectInDetailPosition::class, 'reject_in_detail_id', 'id');
     }
 }

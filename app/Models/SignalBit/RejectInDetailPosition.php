@@ -22,8 +22,8 @@ class RejectInDetailPosition extends Model
         'updated_at',
     ];
 
-    public function rejectInOut()
+    public function rejectInOutDetail()
     {
-        return $this->belongsTo(RejectInOut::class, 'reject_in_id', 'id');
+        return $this->belongsTo(RejectInDetail::class, 'reject_in_detail_id', 'id');
     }
 }

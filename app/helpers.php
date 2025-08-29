@@ -135,3 +135,13 @@ function addQuotesAround($inputStr)
 
     return $result;  // Return the result without an extra comma at the end
 }
+
+function array_group_by(array $array, string $key): array {
+    $result = [];
+    foreach ($array as $row) {
+        if (isset($row[$key])) {
+            $result[$row[$key]][] = $row;
+        }
+    }
+    return $result;
+}

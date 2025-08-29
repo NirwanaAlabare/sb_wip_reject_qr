@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\SignalBit\MasterPlan;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\RejectInOut;
+use App\Models\SignalBit\RejectOutDetail;
 use App\Exports\RejectInOutExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Session;
 use Yajra\DataTables\Facades\DataTables;
 use DB;
 
@@ -91,19 +93,49 @@ class RejectInOutController extends Controller
         return $rejects;
     }
 
-    public function getRejectOut() {
-        RejectInOut::selectRaw("
+    public function getRejectOut(Request $request) {
+        $rejectInOut = RejectInOut::selectRaw("
+            output_reject_in_out.id,
             output_reject_in_out.kode_numbering,
             output_reject_in_out.updated_at,
             output_reject_in_out.output_type,
-            act_costing.kpno,
-            so_det.color,
             userpassword.username,
+            act_costing.kpno,
+            act_costing.styleno,
+            so_det.color,
+            so_det.size,
+            output_reject_in_out.status,
+            output_reject_in_out.grade,
+            GROUP_CONCAT(output_defect_types.defect_type SEPARATOR ' , ') defect_types,
+            GROUP_CONCAT(output_defect_areas.defect_area SEPARATOR ' , ') defect_areas,
+            GROUP_CONCAT(CONCAT_WS(' // ', output_defect_types.defect_type, output_reject_in_detail.reject_area_x, output_reject_in_detail.reject_area_y) SEPARATOR ' | ') reject_area_position,
+            master_plan.gambar,
+            CONCAT(act_costing.id, so_det.color, so_det.size, output_reject_in_out.grade) grouping
         ")->
         leftJoin("so_det", "so_det.id", "=", "output_reject_in_out.so_det_id")->
         leftJoin("so", "so.id", "=", "so_det.id_so")->
         leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
-        leftJoin("userpassword", "userpassword.line_id", "=", "output_reject_in_out.id_cost");
+        leftJoin("userpassword", "userpassword.line_id", "=", "output_reject_in_out.line_id")->
+        leftJoin("master_plan", "master_plan.id", "=", "output_reject_in_out.master_plan_id")->
+        leftJoin("output_reject_in_detail", "output_reject_in_detail.reject_in_id", "=", "output_reject_in_out.id")->
+        leftJoin("output_defect_types", "output_defect_types.id", "=", "output_reject_in_detail.reject_type_id")->
+        leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_reject_in_detail.reject_area_id")->
+        leftJoin("output_reject_in_detail_position", "output_reject_in_detail_position.reject_in_detail_id", "=", "output_reject_in_detail.id")->
+        where("output_reject_in_out.process", $request->process)->
+        whereRaw("output_reject_in_out.updated_at > (NOW() - INTERVAL 6 MONTH)")->
+        groupBy("output_reject_in_out.id")->
+        get();
+
+        return DataTables::of($rejectInOut)->toJson();
+    }
+
+    public function getRejectOutNumber() {
+        $rejectOutPrefix = "R".date("dmy");
+        $rejectOutCount = RejectOutDetail::lastId()+1;
+
+        $rejectOutCode = $rejectOutPrefix."/".$rejectOutCount;
+
+        return $rejectOutCode;
     }
 
     public function getRejectInOutDaily(Request $request) {

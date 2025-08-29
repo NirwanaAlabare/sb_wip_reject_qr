@@ -83,6 +83,53 @@ function setDateFormat(date) {
     return [year, month, day].join("-");
 }
 
+// Format date to YYYY-MM-DD
+function formatDate(date) {
+    var dateObj = new Date(date);
+
+    return [
+        dateObj.getFullYear(),
+        pad(dateObj.getMonth() + 1),
+        pad(dateObj.getDate()),
+    ].join('-');
+}
+
+function formatDateLocal(date) {
+    let months = [{ 'angka': 1, 'nama': 'Januari' }, { 'angka': 2, 'nama': 'Februari' }, { 'angka': 3, 'nama': 'Maret' }, { 'angka': 4, 'nama': 'April' }, { 'angka': 5, 'nama': 'Mei' }, { 'angka': 6, 'nama': 'Juni' }, { 'angka': 7, 'nama': 'Juli' }, { 'angka': 8, 'nama': 'Agustus' }, { 'angka': 9, 'nama': 'September' }, { 'angka': 10, 'nama': 'Oktober' }, { 'angka': 11, 'nama': 'November' }, { 'angka': 12, 'nama': 'Desember' }];
+
+    var dateObj = new Date(date);
+
+    return [
+        pad(dateObj.getDate()),
+        months[dateObj.getMonth()]['nama'],
+        dateObj.getFullYear(),
+    ].join(' ');
+}
+
+function formatDateTime(date) {
+    var dateObj = new Date(date);
+
+    var date = "0" + dateObj.getDate();
+    var month = "0" + (dateObj.getMonth() + 1);
+    var year = dateObj.getFullYear();
+
+    var dateMonthYear = year + "-" + month.substr(-2) + "-" + date.substr(-2);
+
+    // Hours part from the timestamp
+    var hours = "0" + dateObj.getHours();
+
+    // Minutes part from the timestamp
+    var minutes = "0" + dateObj.getMinutes();
+
+    // Seconds part from the timestamp
+    var seconds = "0" + dateObj.getSeconds();
+
+    // Will display time in 10:30:23 format
+    var time = hours.substr(-2) + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+    return dateMonthYear + " " + time;
+}
+
 // Authentication
 function login(e, evt) {
     evt.preventDefault();
@@ -356,7 +403,6 @@ function submitForm(e, evt) {
 
 // Select Reject Area
 function showSelectRejectArea(rejectAreaImage, x, y, index) {
-    console.log("coordinates", x, y, index);
     document.body.style.maxHeight = '100%';
     document.body.style.overflow = 'hidden';
 
@@ -410,10 +456,10 @@ function showRejectAreaImage(defectAreaImage) {
     document.body.style.maxHeight = '100%';
     document.body.style.overflow = 'hidden';
 
-    let defectAreaImageElement = document.getElementById('defect-area-img-show');
+    let defectAreaImageElement = document.getElementById('reject-area-img-show');
     defectAreaImageElement.src = 'http://10.10.5.62:8080/erp/pages/prod_new/upload_files/'+defectAreaImage;
 
-    let showDefectArea = document.getElementById('show-defect-area');
+    let showDefectArea = document.getElementById('show-reject-area');
     showDefectArea.style.display = 'flex';
     showDefectArea.style.flexDirection = 'column';
     showDefectArea.style.alignItems = 'center';
@@ -423,14 +469,24 @@ function hideRejectAreaImage() {
     document.body.style.maxHeight = null;
     document.body.style.overflow = null;
 
-    let defectAreaImageElement = document.getElementById('defect-area-img-show');
+    let defectAreaImageElement = document.getElementById('reject-area-img-show');
     defectAreaImageElement.src = '';
 
-    let showDefectArea = document.getElementById('show-defect-area');
+    let showDefectArea = document.getElementById('show-reject-area');
     showDefectArea.style.display = 'none';
     showDefectArea.style.flexDirection = null;
     showDefectArea.style.justifyContent = null;
     showDefectArea.style.alignItems = null;
+
+    let rejectAreaImgPointClones = document.getElementsByClassName("reject-area-img-point-clone");
+    if (rejectAreaImgPointClones) {
+        for (let i = rejectAreaImgPointClones.length - 1; i >= 0; i--) {
+            rejectAreaImgPointClones[i].parentNode.removeChild(rejectAreaImgPointClones[i]);
+        }
+    }
+
+    let rejectAreaImgTypes = document.getElementById("reject-area-img-types")
+    rejectAreaImgTypes.innerHTML = '';
 }
 
 // Reminder

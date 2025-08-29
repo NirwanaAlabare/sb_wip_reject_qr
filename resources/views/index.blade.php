@@ -34,13 +34,17 @@
 
     {{-- Show Reject Area --}}
     <div class="show-defect-area" id="show-reject-area">
-        <div class="position-relative d-flex flex-column justify-content-center align-items-center">
-            <button type="button" class="btn btn-lg btn-light rounded-0 hide-defect-area-img" onclick="onHideRejectAreaImage()">
-                <i class="fa-regular fa-xmark fa-lg"></i>
-            </button>
-            <div class="defect-area-img-container mx-auto">
+        <button type="button" class="btn btn-lg btn-light rounded-0 hide-defect-area-img" onclick="onHideRejectAreaImage()">
+            <i class="fa-regular fa-xmark fa-lg"></i>
+        </button>
+        <div class="position-relative d-flex justify-content-center align-items-center gap-1 mb-3">
+            <div class="defect-area-img-container mx-auto" id="reject-area-img-container-show">
                 <div class="defect-area-img-point" id="reject-area-img-point-show"></div>
                 <img src="" alt="" class="img-fluid defect-area-img" id="reject-area-img-show">
+            </div>
+            <div class="bg-light p-3 rounded">
+                <ol id="reject-area-img-types" class="mt-3">
+                </ol>
             </div>
         </div>
     </div>
