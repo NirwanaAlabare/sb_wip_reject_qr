@@ -17,6 +17,7 @@ class RejectOut extends Model
     protected $fillable = [
         'id',
         'reject_out_id',
+        'tanggal',
         'no_transaksi',
         'tujuan',
         'created_by',

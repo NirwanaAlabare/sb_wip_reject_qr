@@ -197,6 +197,18 @@ function logout(url) {
     });
 }
 
+function openModal(id) {
+    if (id) {
+        $("#"+id).modal("show");
+    }
+}
+
+function hideModal(id) {
+    if (id) {
+        $("#"+id).modal("hide");
+    }
+}
+
 // filter modal
 function showFilterModal() {
     $("#filter-modal").modal("show");

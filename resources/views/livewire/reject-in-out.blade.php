@@ -126,14 +126,13 @@
             </div>
         </div>
 
-        {{-- Defect OUT --}}
+        {{-- Reject OUT --}}
         <div class="col-12 col-md-12 {{ $mode != "out" ? 'd-none' : ''}}">
             <div class="card">
                 <div class="card-header bg-rework">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title text-light text-center fw-bold">REJECT OUT</h5>
                         <div class="d-flex align-items-center">
-                            <h5 class="px-3 mb-0 text-light">Total : <b></b></h5>
                             <button class="btn btn-dark float-end" wire:click="refreshComponent()">
                                 <i class="fa-solid fa-rotate"></i>
                             </button>
@@ -150,51 +149,93 @@
                     <input type="hidden" class="form-control d-none" id="reject-out-process" value="wip" wire:ignore.self>
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="table-responsive" wire:ignore>
-                                <table class="table table-sm table-bordered" id="reject-out-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Action</th>
-                                            <th>Kode</th>
-                                            <th>Waktu</th>
-                                            <th>Dept.</th>
-                                            <th>Line</th>
-                                            <th>Worksheet</th>
-                                            <th>Style</th>
-                                            <th>Color</th>
-                                            <th>Size</th>
-                                            <th>Quality Check</th>
-                                            <th>Grade</th>
-                                            <th>Defect Type Check</th>
-                                            <th>Defect Area Check</th>
-                                            <th>Gambar</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td>TOTAL</td>
-                                            <td colspan="13"></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                            {{-- WIP --}}
+                            <div id="reject-out-table-wip-container" wire:ignore>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered  w-100" id="reject-out-table-wip">
+                                        <thead>
+                                            <tr>
+                                                <th>Action</th>
+                                                <th>Kode</th>
+                                                <th>Waktu</th>
+                                                <th>Dept.</th>
+                                                <th>Line</th>
+                                                <th>Worksheet</th>
+                                                <th>Style</th>
+                                                <th>Color</th>
+                                                <th>Size</th>
+                                                <th>Quality Check</th>
+                                                <th>Grade</th>
+                                                <th>Defect Type Check</th>
+                                                <th>Defect Area Check</th>
+                                                <th>Gambar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td>TOTAL</td>
+                                                <td colspan="13"></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <button class="btn btn-sb-secondary btn-block mt-3" id="pre-send-reject-out-button" onclick="preSendRejectOut()" wire:ignore><i class="fa-solid fa-paper-plane"></i> SEND</button>
                             </div>
-                        </div>
-                        <div class="col-md-12">
-                            <button class="btn btn-sb-secondary btn-block mt-3" data-bs-toggle="modal" data-bs-target="#send-reject-modal" onclick="getRejectOutNumber()"><i class="fa-solid fa-paper-plane"></i> SEND</button>
+                            {{-- SENT --}}
+                            <div id="reject-out-table-sent-container" class="d-none" wire:ignore>
+                                <div class="d-flex justify-content-between align-items-end gap-3 mb-3">
+                                    <div class="d-flex align-items-end gap-3">
+                                        <div>
+                                            <label class="form-label">Tanggal Awal</label>
+                                            <input type="date" class="form-control form-control-sm" value="{{ date("Y-m-d") }}" id="date-from-sent" onchange="rejectOutReload('sent')">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Tanggal Akhir</label>
+                                            <input type="date" class="form-control form-control-sm" value="{{ date("Y-m-d") }}" id="date-to-sent" onchange="rejectOutReload('sent')">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-success btn-sm" onclick="rejectOutDetailExport(this)"><i class="fa fa-file-excel"></i> Export</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered  w-100" id="reject-out-table-sent">
+                                        <thead>
+                                            <tr>
+                                                <th>Action</th>
+                                                <th>Tanggal</th>
+                                                <th>No. Transaksi</th>
+                                                <th>Tujuan</th>
+                                                <th>Worksheet</th>
+                                                <th>Style</th>
+                                                <th>Color</th>
+                                                <th>Size</th>
+                                                <th>Qty</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="8">TOTAL</td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- All Defect --}}
+        {{-- All Reject --}}
         <div class="col-12 col-md-12 {{ $mode != "in-out" ? 'd-none' : ''}}">
             <div class="card">
                 <div class="card-header bg-sb">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="card-title text-light text-center fw-bold">Defect In Out Summary</h5>
+                        <h5 class="card-title text-light text-center fw-bold">Reject In Out Summary</h5>
                         <div class="d-flex align-items-center">
                             <h5 class="px-3 mb-0 text-light">Total : <b>{{ $totalRejectInOut }}</b></h5>
                             <button class="btn btn-dark float-end" wire:click="refreshComponent()" onclick="rejectInOutReload()">
@@ -218,7 +259,7 @@
                                 </div>
                             </div>
                             <div class="mb-3" wire:ignore>
-                                <button class="btn btn-success" onclick="exportExcel(this)"><i class="fa fa-file-excel"></i> Export</button>
+                                <button class="btn btn-success" onclick="rejectInOutDetailExport(this)" wire:ignore><i class="fa fa-file-excel"></i> Export</button>
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -241,12 +282,12 @@
         </div>
     </div>
 
-    {{-- Defect In Out Detail Modal --}}
+    {{-- Reject In Out Detail Modal --}}
     <div class="modal" tabindex="-1" id="reject-in-out-modal" wire:ignore>
         <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header bg-sb text-light fw-bold">
-                    <h5 class="modal-title">Defect In Out</h5>
+                    <h5 class="modal-title">Reject In Out</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -326,7 +367,7 @@
         </div>
     </div>
 
-    {{-- Reject Modal --}}
+    {{-- Reject In Modal --}}
     <div class="modal" data-bs-backdrop="static" tabindex="-1" id="reject-modal" wire:ignore.self>
         <div class="modal-dialog modal-dialog-scrollable modal-xl">
             <div class="modal-content">
@@ -552,6 +593,82 @@
                                             </tr>
                                         @endif
                                     </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Reject Out Detail Modal --}}
+    <div class="modal" data-bs-backdrop="static" tabindex="-1" id="sent-reject-modal" wire:ignore>
+        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-sb-secondary text-light">
+                    <h5 class="modal-title">SENT</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row justify-content-evenly align-items-end row-gap-1">
+                        <div class="col-md-4">
+                            <label class="form-label">Tanggal</label>
+                            <input type="text" class="form-control" value="{{ date('Y-m-d') }}" id="reject-out-tanggal-sent" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">No. Transaksi</label>
+                            <input type="hidden" class="form-control d-none" id="reject-out-id-sent" readonly>
+                            <input type="text" class="form-control" id="reject-out-no-transaksi-sent" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Tujuan</label>
+                            <input type="text" class="form-control" id="reject-out-tujuan-sent" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">WS</label>
+                            <input type="hidden" class="form-control d-none" id="act-costing-id-sent" readonly>
+                            <input type="text" class="form-control" id="act-costing-ws-sent" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Style</label>
+                            <input type="text" class="form-control" id="style-sent" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Color</label>
+                            <input type="text" class="form-control" id="color-sent" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Size</label>
+                            <input type="text" class="form-control" id="size-sent" readonly>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="table-responsive mt-3" >
+                                <table class="table table-bordered table-sm" id="garment-list-sent">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-nowrap">Tanggal Kirim</th>
+                                            <th class="text-nowrap">No. Transaksi</th>
+                                            <th class="text-nowrap">Tujuan</th>
+                                            <th class="text-nowrap">Kode</th>
+                                            <th class="text-nowrap">Worksheet</th>
+                                            <th class="text-nowrap">Style</th>
+                                            <th class="text-nowrap">Color</th>
+                                            <th class="text-nowrap">Size</th>
+                                            <th class="text-nowrap">Quality Check</th>
+                                            <th class="text-nowrap">Grade</th>
+                                            <th class="text-nowrap">Defect Type Check</th>
+                                            <th class="text-nowrap">Defect Area Check</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td>TOTAL</td>
+                                            <td colspan="11"></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -827,16 +944,18 @@
             });
         });
 
-        // Reject Out Filter
-        $('#reject-out-table thead tr').clone(true).appendTo('#reject-out-table thead');
-        $('#reject-out-table thead tr:eq(1) th').each(function(i) {
+        // REJECT OUT
+
+        // Reject Out Wip Filter
+        $('#reject-out-table-wip thead tr').clone(true).appendTo('#reject-out-table-wip thead');
+        $('#reject-out-table-wip thead tr:eq(1) th').each(function(i) {
             if (i != 0 && i != 13) {
                 var title = $(this).text();
                 $(this).html('<input type="text" class="form-control form-control-sm" style="width:100%" />');
 
                 $('input', this).on('keyup change', function() {
-                    if (rejectOutDatatable.column(i).search() !== this.value) {
-                        rejectOutDatatable
+                    if (rejectOutWipDatatable.column(i).search() !== this.value) {
+                        rejectOutWipDatatable
                             .column(i)
                             .search(this.value)
                             .draw();
@@ -857,8 +976,8 @@
             }
         });
 
-        // Reject Out
-        let rejectOutDatatable = $("#reject-out-table").DataTable({
+        // Reject Out Wip Table
+        let rejectOutWipDatatable = $("#reject-out-table-wip").DataTable({
             serverSide: true,
             processing: true,
             ordering: false,
@@ -867,7 +986,7 @@
                 url: '{{ route('get-reject-out') }}',
                 dataType: 'json',
                 data: function (d) {
-                    d.process = $("#reject-out-process").val();
+                    d.process = "wip";
                 }
             },
             columns: [
@@ -989,20 +1108,148 @@
             }
         });
 
+        // Reject Out Sent Filter
+        let rejectOutSentFilter = ["id_filter", "tanggal_sent_filter", "no_transaksi_sent_filter", "tujuan_sent_filter", "kpno_sent_filter", "styleno_sent_filter", "color_sent_filter", "size_sent_filter"]
+        $('#reject-out-table-sent thead tr').clone(true).appendTo('#reject-out-table-sent thead');
+        $('#reject-out-table-sent thead tr:eq(1) th').each(function(i) {
+            if (i != 0 && i != 7) {
+                var title = $(this).text();
+                $(this).html('<input type="text" class="form-control form-control-sm" style="width:100%" id="'+rejectOutSentFilter[i]+'"/>');
+
+                $('input', this).on('keyup change', function() {
+                    if (rejectOutSentDatatable.column(i).search() !== this.value) {
+                        rejectOutSentDatatable
+                            .column(i)
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            } else {
+                if (i == 0) {
+                    $(this).html(``);
+                } else {
+                    $(this).empty();
+                }
+            }
+        });
+
+        let rejectOutSentDatatable = $("#reject-out-table-sent").DataTable({
+            serverSide: true,
+            processing: true,
+            ordering: false,
+            pageLength: 50,
+            ajax: {
+                url: '{{ route('get-reject-out') }}',
+                dataType: 'json',
+                data: function (d) {
+                    d.tanggal_awal = $("#date-from-sent").val();
+                    d.tanggal_akhir = $("#date-to-sent").val();
+                    d.process = "sent";
+                }
+            },
+            columns: [
+                {
+                    data: "id"
+                },
+                {
+                    data: "tanggal"
+                },
+                {
+                    data: "no_transaksi"
+                },
+                {
+                    data: "tujuan"
+                },
+                {
+                    data: "kpno"
+                },
+                {
+                    data: "styleno"
+                },
+                {
+                    data: "color"
+                },
+                {
+                    data: "size"
+                },
+                {
+                    data: "qty"
+                },
+            ],
+            columnDefs: [
+                {
+                    targets: [0],
+                    className: "text-center text-nowrap align-middle",
+                    render: (data, type, row, meta) => {
+                        console.log(JSON.stringify(row));
+                        return "<button class='btn btn-sb-secondary' onclick='showRejectOutDetail(" + JSON.stringify(row) + ");'><i class='fa fa-magnifying-glass'></i></button>";
+                    }
+                },
+                {
+                    targets: [3],
+                    className: "text-center text-nowrap align-middle",
+                    render: (data, type, row, meta) => {
+                        return data.toUpperCase();
+                    }
+                },
+                {
+                    targets: "_all",
+                    className: "text-nowrap align-middle"
+                },
+            ],
+            footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                var info = api.page.info();
+
+                $(api.column(8).footer()).html("...");
+
+                $.ajax({
+                    type: "get",
+                    url: "{{ route('get-reject-out-total') }}",
+                    data: {
+                        tanggal_awal: $("#date-from-sent").val(),
+                        tanggal_akhir: $("#date-to-sent").val(),
+                        tanggal: $("#tanggal_sent_filter").val(),
+                        no_transaksi: $("#no_transaksi_sent_filter").val(),
+                        tujuan: $("#tujuan_sent_filter").val(),
+                        kpno: $("#kpno_sent_filter").val(),
+                        styleno: $("#styleno_sent_filter").val(),
+                        color: $("#color_sent_filter").val(),
+                        size: $("#size_sent_filter").val()
+                    },
+                    dataType: "json",
+                    success: function (response) {
+                        if (response) {
+                            $(api.column(8).footer()).html(response);
+                        }
+                    }
+                });
+
+            }
+        });
+
         function rejectOutReload(process = null) {
             if (process) {
+                $("#reject-out-process").val(process).trigger("change");
+
                 switchRejectOutProcess(process);
 
-                $("#reject-out-process").val(process).trigger("change");
-                $("#reject-out-table").DataTable().ajax.reload();
-            } else {
-                $("#reject-out-table").DataTable().ajax.reload();
+                if (process == "sent") {
+                    $("#reject-out-table-sent").DataTable().ajax.reload();
+                } else {
+                    $("#reject-out-table-wip").DataTable().ajax.reload();
+                }
             }
+
+            rejectOutSelectedListArr = [];
         }
 
         // Switch Reject Out
         function switchRejectOutProcess(process) {
             if (process == "sent") {
+                $("#reject-out-table-wip-container").addClass("d-none");
+                $("#reject-out-table-sent-container").removeClass("d-none");
+
                 $("#btn-wip").removeClass("btn-primary");
                 $("#btn-wip").addClass("btn-light");
                 $("#btn-wip").removeClass("text-light");
@@ -1013,6 +1260,9 @@
                 $("#btn-sent").removeClass("text-primary");
                 $("#btn-sent").addClass("text-light");
             } else {
+                $("#reject-out-table-sent-container").addClass("d-none");
+                $("#reject-out-table-wip-container").removeClass("d-none");
+
                 $("#btn-wip").removeClass("btn-light");
                 $("#btn-wip").addClass("btn-primary");
                 $("#btn-wip").removeClass("text-primary");
@@ -1028,7 +1278,7 @@
         var rejectOutSelectedListArr = [];
         // Check Reject Out
         function checkRejectOut(element) {
-            let data = $('#reject-out-table').DataTable().row(element.closest('tr')).data();
+            let data = $('#reject-out-table-wip').DataTable().row(element.closest('tr')).data();
 
             if (data) {
                 if (element.checked) {
@@ -1053,8 +1303,21 @@
                     console.error(jqXHR);
                 }
             });
+        }
 
-            @this.rejectOutSelectedList = rejectOutSelectedListArr;
+        function preSendRejectOut() {
+            if (rejectOutSelectedListArr.length > 0) {
+                getRejectOutNumber();
+
+                @this.rejectOutSelectedList = rejectOutSelectedListArr;
+
+                $("#send-reject-modal").modal("show");
+            } else {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Harap pilih REJECT yang akan dikirim.",
+                });
+            }
         }
 
         function sendRejectOut() {
@@ -1076,6 +1339,206 @@
             rejectOutReload();
             $("#send-reject-modal").modal("hide");
         })
+
+        // Show Reject Out Detail
+        async function showRejectOutDetail(e, modal, addons = []) {
+            let data = e;
+
+            $("#reject-out-tanggal-sent").val(e.tanggal);
+            $("#reject-out-id-sent").val(e.id);
+            $("#reject-out-no-transaksi-sent").val(e.no_transaksi);
+            $("#reject-out-tujuan-sent").val(e.tujuan.toUpperCase());
+            $("#act-costing-id-sent").val(e.act_costing_id);
+            $("#act-costing-ws-sent").val(e.kpno);
+            $("#style-sent").val(e.styleno);
+            $("#color-sent").val(e.color);
+            $("#size-sent").val(e.size);
+
+            $("#sent-reject-modal").modal("show");
+
+            rejectOutDetailReload();
+        }
+
+        // Reject Out Detail Filter
+        $('#garment-list-sent thead tr:eq(1) th').each(function(i) {
+            var title = $(this).text();
+            $(this).html('<input type="text" class="form-control form-control-sm" style="width:100%" />');
+
+            $('input', this).on('keyup change', function() {
+                if (rejectOutDetailDatatable.column(i).search() !== this.value) {
+                    rejectOutDetailDatatable
+                        .column(i)
+                        .search(this.value)
+                        .draw();
+                }
+            });
+        });
+
+        // Reject Out Detail Table
+        let rejectOutDetailDatatable = $("#garment-list-sent").DataTable({
+            serverSide: true,
+            processing: true,
+            ordering: false,
+            pageLength: 50,
+            ajax: {
+                url: '{{ route('get-reject-out-detail') }}',
+                dataType: 'json',
+                data: function (d) {
+                    d.reject_out_id = $("#reject-out-id-sent").val();
+                    d.act_costing_id = $("#act-costing-id-sent").val();
+                    d.color = $("#color-sent").val();
+                    d.size =  $("#size-sent").val();
+                }
+            },
+            columns: [
+                {
+                    data: 'tanggal',
+                },
+                {
+                    data: 'no_transaksi',
+                },
+                {
+                    data: 'tujuan',
+                },
+                {
+                    data: 'kode_numbering',
+                },
+                {
+                    data: 'kpno',
+                },
+                {
+                    data: 'styleno',
+                },
+                {
+                    data: 'color',
+                },
+                {
+                    data: 'size',
+                },
+                {
+                    data: 'status',
+                },
+                {
+                    data: 'grade',
+                },
+                {
+                    data: 'defect_types',
+                },
+                {
+                    data: 'defect_areas',
+                }
+            ],
+            columnDefs: [
+                {
+                    targets: [2],
+                    render: (data, type, row, meta) => {
+                        return data.toUpperCase();
+                    }
+                },
+                {
+                    targets: [8],
+                    render: (data, type, row, meta) => {
+                        let textColor = '';
+
+                        if (data == "reworked") {
+                            textColor = "text-primary";
+                        } else {
+                            textColor = "text-danger";
+                        }
+
+                        return `<span class="`+textColor+` fw-bold">`+(data ? (data == "reworked" ? "GOOD" : "REJECT") : '-')+`</span>`;
+                    }
+                },
+                {
+                    targets: "_all",
+                    className: "text-nowrap align-middle"
+                },
+            ],
+            footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+                var info = api.page.info();
+
+                var total = info.recordsTotal;  // total
+
+                $(api.column(1).footer()).html(total);
+            }
+        });
+
+        function rejectOutDetailReload() {
+            $("#garment-list-sent").DataTable().ajax.reload();
+        }
+
+        // Reject Out Detail Export
+        function rejectOutDetailExport(elm) {
+            elm.setAttribute('disabled', 'true');
+            elm.innerText = "";
+            let loading = document.createElement('div');
+            loading.classList.add('loading-small');
+            elm.appendChild(loading);
+
+            iziToast.info({
+                title: 'Exporting...',
+                message: 'Data sedang di export. Mohon tunggu...',
+                position: 'topCenter'
+            });
+
+            $.ajax({
+                url: "{{ route("export-reject-out-detail") }}",
+                type: 'post',
+                data: {
+                    tanggal_awal: $("#date-from-sent").val(),
+                    tanggal_akhir: $("#date-to-sent").val(),
+                    tanggal: $("#tanggal_sent_filter").val(),
+                    no_transaksi: $("#no_transaksi_sent_filter").val(),
+                    tujuan: $("#tujuan_sent_filter").val(),
+                    kpno: $("#kpno_sent_filter").val(),
+                    styleno: $("#styleno_sent_filter").val(),
+                    color: $("#color_sent_filter").val(),
+                    size: $("#size_sent_filter").val()
+                },
+                xhrFields: { responseType : 'blob' },
+                success: function(res) {
+                    elm.removeAttribute('disabled');
+                    elm.innerText = "Export ";
+                    let icon = document.createElement('i');
+                    icon.classList.add('fa-solid');
+                    icon.classList.add('fa-file-excel');
+                    elm.appendChild(icon);
+
+                    iziToast.success({
+                        title: 'Success',
+                        message: 'Data berhasil di export.',
+                        position: 'topCenter'
+                    });
+
+                    var blob = new Blob([res]);
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "Defect In Out {{ Auth::user()->Groupp }} "+$("#dateFrom").val()+" - "+$("#dateTo").val()+".xlsx";
+                    link.click();
+                }, error: function (jqXHR) {
+                    elm.removeAttribute('disabled');
+                    elm.innerText = "Export ";
+                    let icon = document.createElement('i');
+                    icon.classList.add('fa-solid');
+                    icon.classList.add('fa-file-excel');
+                    elm.appendChild(icon);
+
+                    let res = jqXHR.responseJSON;
+                    let message = '';
+                    console.log(res.message);
+                    for (let key in res.errors) {
+                        message += res.errors[key]+' ';
+                        document.getElementById(key).classList.add('is-invalid');
+                    };
+                    iziToast.error({
+                        title: 'Error',
+                        message: message,
+                        position: 'topCenter'
+                    });
+                }
+            });
+        }
 
         // Reject In Out
         let rejectInOutDatatable = $("#reject-in-out-table").DataTable({

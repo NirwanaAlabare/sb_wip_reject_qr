@@ -7,6 +7,7 @@ use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\RejectIn;
 use App\Models\SignalBit\RejectOut;
 use App\Models\SignalBit\RejectOutDetail;
+use App\Exports\RejectOutDetailExport;
 use App\Exports\RejectInOutExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
@@ -95,12 +96,141 @@ class RejectInOutController extends Controller
     }
 
     public function getRejectOut(Request $request) {
-        $rejectInOut = RejectIn::selectRaw("
-            output_reject_in.id,
+        if ($request->process == "sent") {
+            $rangeFilter = " tanggal is not null ";
+            if ($request->tanggal_awal) {
+                $rangeFilter .= "and tanggal >= '".$request->tanggal_awal."'";
+            }
+
+            if ($request->tanggal_akhir) {
+                $rangeFilter .= "and tanggal <= '".$request->tanggal_akhir."'";
+            }
+
+            $rejectOut = RejectOut::selectRaw("
+                output_reject_out.id,
+                output_reject_out.tanggal,
+                output_reject_out.no_transaksi,
+                output_reject_out.tujuan,
+                act_costing.id as act_costing_id,
+                act_costing.kpno,
+                act_costing.styleno,
+                so_det.color,
+                so_det.size,
+                COUNT(output_reject_out_detail.id) qty
+            ")->
+            leftJoin("output_reject_out_detail", "output_reject_out_detail.reject_out_id", "=", "output_reject_out.id")->
+            leftJoin("output_reject_in", "output_reject_in.id", "=", "output_reject_out_detail.reject_in_id")->
+            leftJoin("so_det", "so_det.id", "=", "output_reject_in.so_det_id")->
+            leftJoin("so", "so.id", "=", "so_det.id_so")->
+            leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
+            where("output_reject_in.process", $request->process)->
+            whereRaw($rangeFilter)->
+            whereRaw("output_reject_out_detail.updated_at > (NOW() - INTERVAL 6 MONTH)")->
+            groupBy("output_reject_out.id", "act_costing.id", "so_det.color", "so_det.size")->
+            get();
+        } else {
+            $rejectOut = RejectIn::selectRaw("
+                output_reject_in.id,
+                output_reject_in.kode_numbering,
+                output_reject_in.updated_at,
+                output_reject_in.output_type,
+                userpassword.username,
+                act_costing.id as act_costing_id,
+                act_costing.kpno,
+                act_costing.styleno,
+                so_det.color,
+                so_det.size,
+                output_reject_in.status,
+                output_reject_in.grade,
+                GROUP_CONCAT(output_defect_types.defect_type SEPARATOR ' , ') defect_types,
+                GROUP_CONCAT(output_defect_areas.defect_area SEPARATOR ' , ') defect_areas,
+                GROUP_CONCAT(CONCAT_WS(' // ', output_defect_types.defect_type, output_reject_in_detail.reject_area_x, output_reject_in_detail.reject_area_y) SEPARATOR ' | ') reject_area_position,
+                master_plan.gambar,
+                CONCAT(act_costing.id, so_det.color, so_det.size, output_reject_in.grade) grouping
+            ")->
+            leftJoin("so_det", "so_det.id", "=", "output_reject_in.so_det_id")->
+            leftJoin("so", "so.id", "=", "so_det.id_so")->
+            leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
+            leftJoin("userpassword", "userpassword.line_id", "=", "output_reject_in.line_id")->
+            leftJoin("master_plan", "master_plan.id", "=", "output_reject_in.master_plan_id")->
+            leftJoin("output_reject_in_detail", "output_reject_in_detail.reject_in_id", "=", "output_reject_in.id")->
+            leftJoin("output_defect_types", "output_defect_types.id", "=", "output_reject_in_detail.reject_type_id")->
+            leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_reject_in_detail.reject_area_id")->
+            leftJoin("output_reject_in_detail_position", "output_reject_in_detail_position.reject_in_detail_id", "=", "output_reject_in_detail.id")->
+            where("output_reject_in.process", $request->process)->
+            whereRaw("output_reject_in.updated_at > (NOW() - INTERVAL 6 MONTH)")->
+            groupBy("output_reject_in.id")->
+            get();
+        }
+
+        return DataTables::of($rejectOut)->toJson();
+    }
+
+    public function getRejectOutTotal(Request $request) {
+        $rangeFilter = " tanggal is not null ";
+        if ($request->tanggal_awal) {
+            $rangeFilter .= "and tanggal >= '".$request->tanggal_awal."'";
+        }
+        if ($request->tanggal_akhir) {
+            $rangeFilter .= "and tanggal <= '".$request->tanggal_akhir."'";
+        }
+
+        $additionalFilter = " output_reject_out.id is not null ";
+        if ($request->tanggal) {
+            $additionalFilter .= " and output_reject_out.tanggal LIKE '%".$request->tanggal."%'";
+        }
+        if ($request->no_transaksi) {
+            $additionalFilter .= " and output_reject_out.no_transaksi LIKE '%".$request->no_transaksi."%'";
+        }
+        if ($request->tujuan) {
+            $additionalFilter .= " and output_reject_out.tujuan LIKE '%".$request->tujuan."%'";
+        }
+        if ($request->kpno) {
+            $additionalFilter .= " and act_costing.kpno LIKE '%".$request->kpno."%'";
+        }
+        if ($request->styleno) {
+            $additionalFilter .= " and act_costing.styleno LIKE '%".$request->styleno."%'";
+        }
+        if ($request->color) {
+            $additionalFilter .= " and act_costing.color LIKE '%".$request->color."%'";
+        }
+        if ($request->size) {
+            $additionalFilter .= " and act_costing.size LIKE '%".$request->size."%'";
+        }
+
+        $rejectOut = RejectOut::selectRaw("
+                output_reject_out.id,
+                output_reject_out.tanggal,
+                output_reject_out.no_transaksi,
+                output_reject_out.tujuan,
+                act_costing.id as act_costing_id,
+                act_costing.kpno,
+                act_costing.styleno,
+                so_det.color,
+                so_det.size,
+                COUNT(output_reject_out_detail.id) qty
+            ")->
+            leftJoin("output_reject_out_detail", "output_reject_out_detail.reject_out_id", "=", "output_reject_out.id")->
+            leftJoin("output_reject_in", "output_reject_in.id", "=", "output_reject_out_detail.reject_in_id")->
+            leftJoin("so_det", "so_det.id", "=", "output_reject_in.so_det_id")->
+            leftJoin("so", "so.id", "=", "so_det.id_so")->
+            leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
+            where("output_reject_in.process", "sent")->
+            whereRaw($rangeFilter)->
+            whereRaw($additionalFilter)->
+            whereRaw("output_reject_out_detail.updated_at > (NOW() - INTERVAL 6 MONTH)")->
+            groupBy("output_reject_out.id", "act_costing.id", "so_det.color", "so_det.size")->
+            get();
+
+        return $rejectOut->sum("qty");
+    }
+
+    public function getRejectOutDetail(Request $request) {
+        $rejectOutDetail = RejectOutDetail::selectRaw("
+            output_reject_out.tanggal,
+            output_reject_out.no_transaksi,
+            output_reject_out.tujuan,
             output_reject_in.kode_numbering,
-            output_reject_in.updated_at,
-            output_reject_in.output_type,
-            userpassword.username,
             act_costing.kpno,
             act_costing.styleno,
             so_det.color,
@@ -108,11 +238,10 @@ class RejectInOutController extends Controller
             output_reject_in.status,
             output_reject_in.grade,
             GROUP_CONCAT(output_defect_types.defect_type SEPARATOR ' , ') defect_types,
-            GROUP_CONCAT(output_defect_areas.defect_area SEPARATOR ' , ') defect_areas,
-            GROUP_CONCAT(CONCAT_WS(' // ', output_defect_types.defect_type, output_reject_in_detail.reject_area_x, output_reject_in_detail.reject_area_y) SEPARATOR ' | ') reject_area_position,
-            master_plan.gambar,
-            CONCAT(act_costing.id, so_det.color, so_det.size, output_reject_in.grade) grouping
+            GROUP_CONCAT(output_defect_areas.defect_area SEPARATOR ' , ') defect_areas
         ")->
+        leftJoin("output_reject_out", "output_reject_out_detail.reject_out_id", "=", "output_reject_out.id")->
+        leftJoin("output_reject_in", "output_reject_out_detail.reject_in_id", "=", "output_reject_in.id")->
         leftJoin("so_det", "so_det.id", "=", "output_reject_in.so_det_id")->
         leftJoin("so", "so.id", "=", "so_det.id_so")->
         leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
@@ -122,12 +251,16 @@ class RejectInOutController extends Controller
         leftJoin("output_defect_types", "output_defect_types.id", "=", "output_reject_in_detail.reject_type_id")->
         leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_reject_in_detail.reject_area_id")->
         leftJoin("output_reject_in_detail_position", "output_reject_in_detail_position.reject_in_detail_id", "=", "output_reject_in_detail.id")->
-        where("output_reject_in.process", $request->process)->
-        whereRaw("output_reject_in.updated_at > (NOW() - INTERVAL 6 MONTH)")->
-        groupBy("output_reject_in.id")->
+        where("output_reject_in.process", "sent")->
+        where("output_reject_out.id", $request->reject_out_id)->
+        where("act_costing.id", $request->act_costing_id)->
+        where("so_det.color", $request->color)->
+        where("so_det.size", $request->size)->
+        whereRaw("output_reject_out.updated_at > (NOW() - INTERVAL 6 MONTH)")->
+        groupBy("output_reject_out_detail.id")->
         get();
 
-        return DataTables::of($rejectInOut)->toJson();
+        return DataTables::of($rejectOutDetail)->toJson();
     }
 
     public function getRejectOutNumber() {
@@ -278,6 +411,19 @@ class RejectInOutController extends Controller
         return array("defectIn" => $rejectInOutQuery->count(), "defectProcess" => $rejectInOutQuery->where("status", "reject")->count(), "defectOut" => $rejectInOutQuery->where("status", "reworked")->count());
     }
 
+    public function exportRejectOutDetail(Request $request) {
+        $tanggal_awal = $request->tanggal_awal;
+        $tanggal_akhir = $request->tanggal_akhir;
+        $tanggal = $request->tanggal;
+        $no_transaksi = $request->no_transaksi;
+        $tujuan = $request->tujuan;
+        $kpno = $request->kpno;
+        $styleno = $request->styleno;
+        $color = $request->color;
+        $size = $request->size;
+
+        return Excel::download(new RejectOutDetailExport($tanggal_awal, $tanggal_akhir, $tanggal, $no_transaksi, $tujuan, $kpno, $styleno, $color, $size), 'Report Reject In Out.xlsx');
+    }
     public function exportRejectInOut(Request $request) {
         return Excel::download(new RejectInOutExport($request->dateFrom, $request->dateTo), 'Report Reject In Out.xlsx');
     }

@@ -2,15 +2,16 @@
 
 namespace App\Exports;
 
-use App\Models\SignalBit\Defect;
-use App\Models\SignalBit\DefectInOut;
+use App\Models\SignalBit\Reject;
+use App\Models\SignalBit\RejectIn;
+use App\Models\SignalBit\RejectOut;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class DefectInOutExport implements FromView, ShouldAutoSize
+class RejectInOutExport implements FromView, ShouldAutoSize
 {
     use Exportable;
 

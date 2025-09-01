@@ -38,11 +38,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/get-defect-type', 'getDefectType')->name("get-defect-type");
         Route::get('/get-defect-area', 'getDefectArea')->name("get-defect-area");
         Route::get('/get-reject-out', 'getRejectOut')->name("get-reject-out");
+        Route::get('/get-reject-out-total', 'getRejectOutTotal')->name("get-reject-out-total");
         Route::get('/get-reject-out-number', 'getRejectOutNumber')->name("get-reject-out-number");
+        Route::get('/get-reject-out-detail', 'getRejectOutDetail')->name("get-reject-out-detail");
         Route::get('/get-reject-in-out-daily', 'getRejectInOutDaily')->name("get-reject-in-out-daily");
         Route::get('/get-reject-in-out-detail', 'getRejectInOutDetail')->name("get-reject-in-out-detail");
         Route::get('/get-reject-in-out-detail-total', 'getRejectInOutDetailTotal')->name("get-reject-in-out-detail-total");
 
+        Route::post('/export-reject-out-detail', 'exportRejectOutDetail')->name("export-reject-out-detail");
         Route::post('/export-reject-in-out', 'exportRejectInOut')->name("export-reject-in-out");
     });
 
