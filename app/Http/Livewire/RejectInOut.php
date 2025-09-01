@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire;
 
-use App\Models\SignalBit\RejectOutDetail;
 use Livewire\Component;
 use App\Models\SignalBit\UserPassword;
 use App\Models\SignalBit\MasterPlan;
@@ -13,11 +12,14 @@ use App\Models\SignalBit\DefectPacking;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\RejectPacking;
 use App\Models\SignalBit\OutputFinishing;
-use App\Models\SignalBit\RejectInOut as RejectInOutModel;
+use App\Models\SignalBit\RejectIn;
 use App\Models\SignalBit\RejectInDetail;
 use App\Models\SignalBit\RejectInDetailPosition;
+use App\Models\SignalBit\RejectOut;
+use App\Models\SignalBit\RejectOutDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Livewire\WithPagination;
 use DB;
 
@@ -111,6 +113,9 @@ class RejectInOut extends Component
 
         // Reject Out
         $this->rejectOutSelectedList = [];
+        $this->rejectOutTanggal = date("Y-m-d");
+        $this->rejectOutNoTransaksi = null;
+        $this->rejectOutTujuan = "gudang";
 
         // Reject QR
         $this->scannedRejectIn = null;
@@ -150,6 +155,7 @@ class RejectInOut extends Component
         $this->emit('qrInputFocus', $mode);
     }
 
+    // REJECT IN
     public function updatingRejectInSearch()
     {
         $this->resetPage("rejectInPage");
@@ -175,7 +181,7 @@ class RejectInOut extends Component
                     so_det.color,
                     so_det.size,
                     userpassword.username,
-                    output_reject_in_out.id defect_in_id,
+                    output_reject_in.id defect_in_id,
                     'qc' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_rejects.created_by")->
@@ -185,9 +191,9 @@ class RejectInOut extends Component
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
                 leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects.reject_area_id")->
-                leftJoin("output_reject_in_out", function ($join) {
-                    $join->on("output_reject_in_out.id", "=", "output_rejects.id");
-                    $join->on("output_reject_in_out.output_type", "=", DB::raw("'qc'"));
+                leftJoin("output_reject_in", function ($join) {
+                    $join->on("output_reject_in.id", "=", "output_rejects.id");
+                    $join->on("output_reject_in.output_type", "=", DB::raw("'qc'"));
                 })->
                 where("output_rejects.kode_numbering", $this->scannedRejectIn)->
                 first();
@@ -208,7 +214,7 @@ class RejectInOut extends Component
                         so_det.color,
                         so_det.size,
                         userpassword.username,
-                        output_reject_in_out.id defect_in_id,
+                        output_reject_in.id defect_in_id,
                         'qcf' output_type
                     ")->
                     leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_check_finishing.created_by")->
@@ -218,9 +224,9 @@ class RejectInOut extends Component
                     leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                     leftJoin("output_defect_types", "output_defect_types.id", "=", "output_check_finishing.defect_type_id")->
                     leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_check_finishing.defect_area_id")->
-                    leftJoin("output_reject_in_out", function ($join) {
-                        $join->on("output_reject_in_out.id", "=", "output_check_finishing.id");
-                        $join->on("output_reject_in_out.output_type", "=", DB::raw("'qcf'"));
+                    leftJoin("output_reject_in", function ($join) {
+                        $join->on("output_reject_in.id", "=", "output_check_finishing.id");
+                        $join->on("output_reject_in.output_type", "=", DB::raw("'qcf'"));
                     })->
                     where("output_check_finishing.status", "reject")->
                     where("output_check_finishing.kode_numbering", $this->scannedRejectIn)->
@@ -242,7 +248,7 @@ class RejectInOut extends Component
                             so_det.color,
                             so_det.size,
                             userpassword.username,
-                            output_reject_in_out.id defect_in_id,
+                            output_reject_in.id defect_in_id,
                             'packing' output_type
                         ")->
                         leftJoin("userpassword", "userpassword.username", "=", "output_rejects_packing.created_by")->
@@ -251,9 +257,9 @@ class RejectInOut extends Component
                         leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                         leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects_packing.reject_type_id")->
                         leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects_packing.reject_area_id")->
-                        leftJoin("output_reject_in_out", function ($join) {
-                            $join->on("output_reject_in_out.id", "=", "output_rejects_packing.id");
-                            $join->on("output_reject_in_out.output_type", "=", DB::raw("'packing'"));
+                        leftJoin("output_reject_in", function ($join) {
+                            $join->on("output_reject_in.id", "=", "output_rejects_packing.id");
+                            $join->on("output_reject_in.output_type", "=", DB::raw("'packing'"));
                         })->
                         whereNotNull("output_rejects_packing.id")->
                         where("output_rejects_packing.kode_numbering", $this->scannedRejectIn)->
@@ -278,7 +284,7 @@ class RejectInOut extends Component
                     so_det.color,
                     so_det.size,
                     userpassword.username,
-                    output_reject_in_out.id defect_in_id,
+                    output_reject_in.id defect_in_id,
                     'packing' output_type
                 ")->
                 leftJoin("userpassword", "userpassword.username", "=", "output_rejects_packing.created_by")->
@@ -287,9 +293,9 @@ class RejectInOut extends Component
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects_packing.reject_type_id")->
                 leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects_packing.reject_area_id")->
-                leftJoin("output_reject_in_out", function ($join) {
-                    $join->on("output_reject_in_out.id", "=", "output_rejects_packing.id");
-                    $join->on("output_reject_in_out.output_type", "=", DB::raw("'packing'"));
+                leftJoin("output_reject_in", function ($join) {
+                    $join->on("output_reject_in.id", "=", "output_rejects_packing.id");
+                    $join->on("output_reject_in.output_type", "=", DB::raw("'packing'"));
                 })->
                 whereNotNull("output_rejects_packing.id")->
                 where("output_rejects_packing.kode_numbering", $this->scannedRejectIn)->
@@ -308,7 +314,7 @@ class RejectInOut extends Component
                     so_det.color,
                     so_det.size,
                     userpassword.username,
-                    output_reject_in_out.id defect_in_id,
+                    output_reject_in.id defect_in_id,
                     'qcf' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_check_finishing.created_by")->
@@ -318,9 +324,9 @@ class RejectInOut extends Component
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_check_finishing.defect_type_id")->
                 leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_check_finishing.defect_area_id")->
-                leftJoin("output_reject_in_out", function ($join) {
-                    $join->on("output_reject_in_out.id", "=", "output_check_finishing.id");
-                    $join->on("output_reject_in_out.output_type", "=", DB::raw("'qcf'"));
+                leftJoin("output_reject_in", function ($join) {
+                    $join->on("output_reject_in.id", "=", "output_check_finishing.id");
+                    $join->on("output_reject_in.output_type", "=", DB::raw("'qcf'"));
                 })->
                 where("output_check_finishing.status", "reject")->
                 where("output_check_finishing.kode_numbering", $this->scannedRejectIn)->
@@ -339,7 +345,7 @@ class RejectInOut extends Component
                     so_det.color,
                     so_det.size,
                     userpassword.username,
-                    output_reject_in_out.id defect_in_id,
+                    output_reject_in.id defect_in_id,
                     'qc' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_rejects.created_by")->
@@ -349,9 +355,9 @@ class RejectInOut extends Component
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
                 leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects.reject_area_id")->
-                leftJoin("output_reject_in_out", function ($join) {
-                    $join->on("output_reject_in_out.id", "=", "output_rejects.id");
-                    $join->on("output_reject_in_out.output_type", "=", DB::raw("'qc'"));
+                leftJoin("output_reject_in", function ($join) {
+                    $join->on("output_reject_in.id", "=", "output_rejects.id");
+                    $join->on("output_reject_in.output_type", "=", DB::raw("'qc'"));
                 })->
                 where("output_rejects.kode_numbering", $this->scannedRejectIn)->
                 first();
@@ -360,7 +366,7 @@ class RejectInOut extends Component
             if ($scannedReject) {
 
                 // Check Reject In Out
-                $rejectInOut = RejectInOutModel::where("reject_id", $scannedReject->id)->where("output_type", $scannedReject->output_type)->first();
+                $rejectInOut = RejectIn::where("reject_id", $scannedReject->id)->where("output_type", $scannedReject->output_type)->first();
 
                 if (!$rejectInOut) {
 
@@ -525,7 +531,7 @@ class RejectInOut extends Component
                     master_plan.id as master_plan_id,
                     userpassword.username,
                     userpassword.line_id,
-                    output_reject_in_out.id defect_in_id,
+                    output_reject_in.id defect_in_id,
                     'qc' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_rejects.created_by")->
@@ -534,9 +540,9 @@ class RejectInOut extends Component
                 leftJoin("master_plan", "master_plan.id", "=", "output_rejects.master_plan_id")->
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
-                leftJoin("output_reject_in_out", function ($join) {
-                    $join->on("output_reject_in_out.id", "=", "output_rejects.id");
-                    $join->on("output_reject_in_out.output_type", "=", DB::raw("'qc'"));
+                leftJoin("output_reject_in", function ($join) {
+                    $join->on("output_reject_in.id", "=", "output_rejects.id");
+                    $join->on("output_reject_in.output_type", "=", DB::raw("'qc'"));
                 })->
                 where("output_rejects.kode_numbering", $this->scannedRejectIn)->
                 first();
@@ -557,7 +563,7 @@ class RejectInOut extends Component
                         master_plan.id as master_plan_id,
                         userpassword.username,
                         userpassword.line_id,
-                        output_reject_in_out.id defect_in_id,
+                        output_reject_in.id defect_in_id,
                         'qcf' output_type
                     ")->
                     leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_check_finishing.created_by")->
@@ -566,9 +572,9 @@ class RejectInOut extends Component
                     leftJoin("master_plan", "master_plan.id", "=", "output_check_finishing.master_plan_id")->
                     leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                     leftJoin("output_defect_types", "output_defect_types.id", "=", "output_check_finishing.defect_type_id")->
-                    leftJoin("output_reject_in_out", function ($join) {
-                        $join->on("output_reject_in_out.id", "=", "output_check_finishing.id");
-                        $join->on("output_reject_in_out.output_type", "=", DB::raw("'qcf'"));
+                    leftJoin("output_reject_in", function ($join) {
+                        $join->on("output_reject_in.id", "=", "output_check_finishing.id");
+                        $join->on("output_reject_in.output_type", "=", DB::raw("'qcf'"));
                     })->
                     where("output_check_finishing.status", "reject")->
                     where("output_check_finishing.kode_numbering", $this->scannedRejectIn)->
@@ -590,7 +596,7 @@ class RejectInOut extends Component
                             master_plan.id as master_plan_id,
                             userpassword.username,
                             userpassword.line_id,
-                            output_reject_in_out.id defect_in_id,
+                            output_reject_in.id defect_in_id,
                             'packing' output_type
                         ")->
                         leftJoin("userpassword", "userpassword.username", "=", "output_rejects_packing.created_by")->
@@ -598,9 +604,9 @@ class RejectInOut extends Component
                         leftJoin("master_plan", "master_plan.id", "=", "output_rejects_packing.master_plan_id")->
                         leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                         leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects_packing.reject_type_id")->
-                        leftJoin("output_reject_in_out", function ($join) {
-                            $join->on("output_reject_in_out.id", "=", "output_rejects_packing.id");
-                            $join->on("output_reject_in_out.output_type", "=", DB::raw("'packing'"));
+                        leftJoin("output_reject_in", function ($join) {
+                            $join->on("output_reject_in.id", "=", "output_rejects_packing.id");
+                            $join->on("output_reject_in.output_type", "=", DB::raw("'packing'"));
                         })->
                         whereNotNull("output_rejects_packing.id")->
                         where("output_rejects_packing.kode_numbering", $this->scannedRejectIn)->
@@ -625,7 +631,7 @@ class RejectInOut extends Component
                     master_plan.id as master_plan_id,
                     userpassword.username,
                     userpassword.line_id,
-                    output_reject_in_out.id defect_in_id,
+                    output_reject_in.id defect_in_id,
                     'packing' output_type
                 ")->
                 leftJoin("userpassword", "userpassword.username", "=", "output_rejects_packing.created_by")->
@@ -633,9 +639,9 @@ class RejectInOut extends Component
                 leftJoin("master_plan", "master_plan.id", "=", "output_rejects_packing.master_plan_id")->
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects_packing.reject_type_id")->
-                leftJoin("output_reject_in_out", function ($join) {
-                    $join->on("output_reject_in_out.id", "=", "output_rejects_packing.id");
-                    $join->on("output_reject_in_out.output_type", "=", DB::raw("'packing'"));
+                leftJoin("output_reject_in", function ($join) {
+                    $join->on("output_reject_in.id", "=", "output_rejects_packing.id");
+                    $join->on("output_reject_in.output_type", "=", DB::raw("'packing'"));
                 })->
                 whereNotNull("output_rejects_packing.id")->
                 where("output_rejects_packing.kode_numbering", $this->scannedRejectIn)->
@@ -654,7 +660,7 @@ class RejectInOut extends Component
                     master_plan.id as master_plan_id,
                     userpassword.username,
                     userpassword.line_id,
-                    output_reject_in_out.id defect_in_id,
+                    output_reject_in.id defect_in_id,
                     'qcf' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_check_finishing.created_by")->
@@ -663,9 +669,9 @@ class RejectInOut extends Component
                 leftJoin("master_plan", "master_plan.id", "=", "output_check_finishing.master_plan_id")->
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_check_finishing.defect_type_id")->
-                leftJoin("output_reject_in_out", function ($join) {
-                    $join->on("output_reject_in_out.id", "=", "output_check_finishing.id");
-                    $join->on("output_reject_in_out.output_type", "=", DB::raw("'qcf'"));
+                leftJoin("output_reject_in", function ($join) {
+                    $join->on("output_reject_in.id", "=", "output_check_finishing.id");
+                    $join->on("output_reject_in.output_type", "=", DB::raw("'qcf'"));
                 })->
                 where("output_check_finishing.status", "reject")->
                 where("output_check_finishing.kode_numbering", $this->scannedRejectIn)->
@@ -684,7 +690,7 @@ class RejectInOut extends Component
                     master_plan.id as master_plan_id,
                     userpassword.username,
                     userpassword.line_id,
-                    output_reject_in_out.id defect_in_id,
+                    output_reject_in.id defect_in_id,
                     'qc' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_rejects.created_by")->
@@ -693,9 +699,9 @@ class RejectInOut extends Component
                 leftJoin("master_plan", "master_plan.id", "=", "output_rejects.master_plan_id")->
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
-                leftJoin("output_reject_in_out", function ($join) {
-                    $join->on("output_reject_in_out.id", "=", "output_rejects.id");
-                    $join->on("output_reject_in_out.output_type", "=", DB::raw("'qc'"));
+                leftJoin("output_reject_in", function ($join) {
+                    $join->on("output_reject_in.id", "=", "output_rejects.id");
+                    $join->on("output_reject_in.output_type", "=", DB::raw("'qc'"));
                 })->
                 where("output_rejects.kode_numbering", $this->scannedRejectIn)->
                 first();
@@ -704,7 +710,7 @@ class RejectInOut extends Component
             if ($scannedReject) {
 
                 // Check Reject In Out
-                $rejectInOut = RejectInOutModel::where("reject_id", $scannedReject->id)->where("output_type", $scannedReject->output_type)->first();
+                $rejectInOut = RejectIn::where("reject_id", $scannedReject->id)->where("output_type", $scannedReject->output_type)->first();
 
                 if (!$rejectInOut) {
                     // Check Reject In Quality Input
@@ -717,7 +723,7 @@ class RejectInOut extends Component
                             if ($this->validateRejectInQuality()) {
 
                                 // Create Reject In
-                                $createRejectIn = RejectInOutModel::create([
+                                $createRejectIn = RejectIn::create([
                                     "reject_id" => $scannedReject->id,
                                     "so_det_id" => $scannedReject->so_det_id,
                                     "master_plan_id" => $scannedReject->master_plan_id,
@@ -824,6 +830,7 @@ class RejectInOut extends Component
         $this->emit('qrInputFocus', $this->mode);
     }
 
+    // REJECT OUT
     public function showRejectAreaImage($productTypeImage, $x, $y)
     {
         $this->productTypeImage = $productTypeImage;
@@ -860,19 +867,56 @@ class RejectInOut extends Component
     public function sendRejectOut() {
         if ($this->rejectOutSelectedList && count($this->rejectOutSelectedList) > 0) {
 
-            $rejectOutDetail = RejectOutDetail::create([
-                "tanggal" => $rejectOutTanggal,
-                "no_transaksi" => $rejectOutNoTransaksi,
-                "tujuan" => $rejectOutTujuan,
-                "created_by" => Auth::user()->id,
+            // Create Reject Out Parent
+            $rejectOut = RejectOut::create([
+                "tanggal" => $this->rejectOutTanggal,
+                "no_transaksi" => $this->rejectOutNoTransaksi,
+                "tujuan" => $this->rejectOutTujuan,
+                "created_by" => Auth::user()->line_id,
                 "created_by_username" => Auth::user()->username
             ]);
 
-            if ($rejectOutDetail) {
-                foreach ($this->rejectOutSelectedList) {
-
+            if ($rejectOut) {
+                // Create Reject Out Detail
+                $rejectOutBatch = Str::uuid();
+                $rejectOutDetailArr = [];
+                foreach ($this->rejectOutSelectedList as $reject) {
+                    array_push($rejectOutDetailArr, [
+                        "reject_in_id" => $reject['id'],
+                        "reject_out_id" => $rejectOut->id,
+                        "batch" => $rejectOutBatch,
+                        "created_by" => Auth::user()->line_id,
+                        "created_by_username" => Auth::user()->username,
+                        "created_at" => Carbon::now(),
+                        "updated_at" => Carbon::now(),
+                    ]);
                 }
+
+                $createRejectOutDetail = RejectOutDetail::insert($rejectOutDetailArr);
+
+                if ($createRejectOutDetail) {
+                    // Update Reject In Process
+                    $rejectInIds = DB::table("output_reject_out_detail")->where("batch", $rejectOutBatch)->pluck("reject_in_id")->toArray();
+                    RejectIn::whereIn("id", $rejectInIds)->update([
+                        "process" => "sent"
+                    ]);
+
+                    $this->rejectOutSelectedList = [];
+                    $this->rejectOutTanggal = date("Y-m-d");
+                    $this->rejectOutNoTransaksi = null;
+                    $this->rejectOutTujuan = "gudang";
+
+                    $this->emit('refreshRejectOutNumber');
+
+                    $this->emit('alert', 'success', count($rejectInIds)." reject berhasil di kirim.");
+                } else {
+                    $this->emit('alert', 'error', "Terjadi kesalahan.");
+                }
+            } else {
+                $this->emit('alert', 'error',  "Terjadi kesalahan.");
             }
+        } else {
+            $this->emit('alert', 'error',  "Harap pilih reject out.");
         }
     }
 
@@ -905,13 +949,13 @@ class RejectInOut extends Component
             leftJoin("master_plan", "master_plan.id", "=", "output_rejects_packing.master_plan_id")->
             leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects_packing.reject_type_id")->
-            leftJoin("output_reject_in_out", function($join) {
-                $join->on("output_reject_in_out.reject_id", "=", "output_rejects_packing.id");
-                $join->on("output_reject_in_out.output_type", "=", DB::raw("'packing'"));
+            leftJoin("output_reject_in", function($join) {
+                $join->on("output_reject_in.reject_id", "=", "output_rejects_packing.id");
+                $join->on("output_reject_in.output_type", "=", DB::raw("'packing'"));
             })->
             whereNotNull("master_plan.id")->
             whereNotNull("output_rejects_packing.kode_numbering")->
-            whereNull("output_reject_in_out.id")->
+            whereNull("output_reject_in.id")->
             whereRaw("YEAR(output_rejects_packing.updated_at) = '".date("Y")."'");
             if ($this->rejectInSearch) {
                 $rejectInPackingQuery->whereRaw("(
@@ -964,13 +1008,13 @@ class RejectInOut extends Component
             leftJoin("master_plan", "master_plan.id", "=", "output_check_finishing.master_plan_id")->
             leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_check_finishing.defect_type_id")->
-            leftJoin("output_reject_in_out", function($join) {
-                $join->on("output_reject_in_out.reject_id", "=", "output_check_finishing.id");
-                $join->on("output_reject_in_out.output_type", "=", DB::raw("'qcf'"));
+            leftJoin("output_reject_in", function($join) {
+                $join->on("output_reject_in.reject_id", "=", "output_check_finishing.id");
+                $join->on("output_reject_in.output_type", "=", DB::raw("'qcf'"));
             })->
             whereNotNull("master_plan.id")->
             whereNotNull("output_check_finishing.kode_numbering")->
-            whereNull("output_reject_in_out.id")->
+            whereNull("output_reject_in.id")->
             whereRaw("YEAR(output_check_finishing.updated_at) = '".date("Y")."'");
             if ($this->rejectInSearch) {
                 $rejectInQcfQuery->whereRaw("(
@@ -1022,13 +1066,13 @@ class RejectInOut extends Component
             leftJoin("master_plan", "master_plan.id", "=", "output_rejects.master_plan_id")->
             leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
-            leftJoin("output_reject_in_out", function($join) {
-                $join->on("output_reject_in_out.reject_id", "=", "output_rejects.id");
-                $join->on("output_reject_in_out.output_type", "=", DB::raw("'qc'"));
+            leftJoin("output_reject_in", function($join) {
+                $join->on("output_reject_in.reject_id", "=", "output_rejects.id");
+                $join->on("output_reject_in.output_type", "=", DB::raw("'qc'"));
             })->
             whereNotNull("master_plan.id")->
             whereNotNull("output_rejects.kode_numbering")->
-            whereNull("output_reject_in_out.id")->
+            whereNull("output_reject_in.id")->
             whereRaw("YEAR(output_rejects.updated_at) = '".date("Y")."'");
             if ($this->rejectInSearch) {
                 $rejectInQcQuery->whereRaw("(
@@ -1083,13 +1127,13 @@ class RejectInOut extends Component
             leftJoin("master_plan", "master_plan.id", "=", "output_rejects_packing.master_plan_id")->
             leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects_packing.reject_type_id")->
-            leftJoin("output_reject_in_out", function($join) {
-                $join->on("output_reject_in_out.reject_id", "=", "output_rejects_packing.id");
-                $join->on("output_reject_in_out.output_type", "=", DB::raw("'packing'"));
+            leftJoin("output_reject_in", function($join) {
+                $join->on("output_reject_in.reject_id", "=", "output_rejects_packing.id");
+                $join->on("output_reject_in.output_type", "=", DB::raw("'packing'"));
             })->
             whereNotNull("master_plan.id")->
             whereNotNull("output_rejects_packing.kode_numbering")->
-            whereNull("output_reject_in_out.id")->
+            whereNull("output_reject_in.id")->
             whereRaw("YEAR(output_rejects_packing.updated_at) = '".date("Y")."'");
             if ($this->rejectInSearch) {
                 $rejectInQuery->whereRaw("(
@@ -1141,14 +1185,14 @@ class RejectInOut extends Component
             leftJoin("master_plan", "master_plan.id", "=", "output_check_finishing.master_plan_id")->
             leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_check_finishing.defect_type_id")->
-            leftJoin("output_reject_in_out", function($join) {
-                $join->on("output_reject_in_out.reject_id", "=", "output_check_finishing.id");
-                $join->on("output_reject_in_out.output_type", "=", DB::raw("'qcf'"));
+            leftJoin("output_reject_in", function($join) {
+                $join->on("output_reject_in.reject_id", "=", "output_check_finishing.id");
+                $join->on("output_reject_in.output_type", "=", DB::raw("'qcf'"));
             })->
             whereNotNull("master_plan.id")->
             whereNotNull("output_check_finishing.kode_numbering")->
             where("output_check_finishing.status", "reject")->
-            whereNull("output_reject_in_out.id")->
+            whereNull("output_reject_in.id")->
             whereRaw("YEAR(output_check_finishing.updated_at) = '".date("Y")."'");
             if ($this->rejectInSearch) {
                 $rejectInQuery->whereRaw("(
@@ -1200,13 +1244,13 @@ class RejectInOut extends Component
             leftJoin("master_plan", "master_plan.id", "=", "output_rejects.master_plan_id")->
             leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
-            leftJoin("output_reject_in_out", function($join) {
-                $join->on("output_reject_in_out.reject_id", "=", "output_rejects.id");
-                $join->on("output_reject_in_out.output_type", "=", DB::raw("'qc'"));
+            leftJoin("output_reject_in", function($join) {
+                $join->on("output_reject_in.reject_id", "=", "output_rejects.id");
+                $join->on("output_reject_in.output_type", "=", DB::raw("'qc'"));
             })->
             whereNotNull("master_plan.id")->
             whereNotNull("output_rejects.kode_numbering")->
-            whereNull("output_reject_in_out.id")->
+            whereNull("output_reject_in.id")->
             whereRaw("YEAR(output_rejects.updated_at) = '".date("Y")."'");
             if ($this->rejectInSearch) {
                 $rejectInQuery->whereRaw("(
@@ -1251,17 +1295,17 @@ class RejectInOut extends Component
             paginate(100, ['*'], 'rejectInPage');
 
         // All Defect Summary
-        $rejectDaily = RejectInOutModel::selectRaw("
-                DATE(output_reject_in_out.created_at) tanggal,
-                SUM(CASE WHEN (CASE WHEN output_reject_in_out.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in_out.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL THEN 1 ELSE 0 END) total_in,
-                SUM(CASE WHEN (CASE WHEN output_reject_in_out.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in_out.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in_out.status = 'reworked' THEN 1 ELSE 0 END) total_good,
-                SUM(CASE WHEN (CASE WHEN output_reject_in_out.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in_out.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in_out.status = 'rejected' THEN 1 ELSE 0 END) total_reject
+        $rejectDaily = RejectIn::selectRaw("
+                DATE(output_reject_in.created_at) tanggal,
+                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL THEN 1 ELSE 0 END) total_in,
+                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in.status = 'reworked' THEN 1 ELSE 0 END) total_good,
+                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in.status = 'rejected' THEN 1 ELSE 0 END) total_reject
             ")->
-            leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in_out.reject_id")->
-            leftJoin("output_rejects_packing", "output_rejects_packing.id", "=", "output_reject_in_out.reject_id")->
-            leftJoin("output_check_finishing", "output_check_finishing.id", "=", "output_reject_in_out.reject_id")->
-            whereBetween("output_reject_in_out.created_at", [$this->rejectInOutFrom." 00:00:00", $this->rejectInOutTo." 23:59:59"])->
-            groupByRaw("DATE(output_reject_in_out.created_at)")->
+            leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in.reject_id")->
+            leftJoin("output_rejects_packing", "output_rejects_packing.id", "=", "output_reject_in.reject_id")->
+            leftJoin("output_check_finishing", "output_check_finishing.id", "=", "output_reject_in.reject_id")->
+            whereBetween("output_reject_in.created_at", [$this->rejectInOutFrom." 00:00:00", $this->rejectInOutTo." 23:59:59"])->
+            groupByRaw("DATE(output_reject_in.created_at)")->
             get();
 
         $rejectTotal = $rejectDaily->sum("total_in");

@@ -10,7 +10,7 @@ use App\Models\SignalBit\Defect;
 use App\Models\SignalBit\Reject;
 use App\Models\SignalBit\Rework;
 use App\Models\SignalBit\MasterPlan;
-use App\Models\SignalBit\RejectInOut;
+use App\Models\SignalBit\RejectIn;
 
 class HistoryContent extends Component
 {
@@ -38,8 +38,8 @@ class HistoryContent extends Component
         $masterPlan = session()->get('orderInfo');
         $this->masterPlan = $masterPlan ? $masterPlan->id : null;
 
-        $rejectInOutQuery = RejectInOut::selectRaw("
-                COALESCE(output_reject_in_out.reworked_at, output_reject_in_out.updated_at) time,
+        $rejectInOutQuery = RejectIn::selectRaw("
+                COALESCE(output_reject_in.reworked_at, output_reject_in.updated_at) time,
                 master_plan.id master_plan_id,
                 master_plan.id_ws,
                 master_plan.sewing_line,
@@ -50,33 +50,33 @@ class HistoryContent extends Component
                 output_defect_types.defect_type,
                 output_rejects.so_det_id,
                 so_det.size,
-                COUNT(output_reject_in_out.id) qty,
-                output_reject_in_out.status
+                COUNT(output_reject_in.id) qty,
+                output_reject_in.status
             ")->
-            leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in_out.reject_id")->
+            leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in.reject_id")->
             leftJoin("so_det", "so_det.id", "=", "output_rejects.so_det_id")->
             leftJoin("master_plan", "master_plan.id", "=", "output_rejects.master_plan_id")->
             leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
-            where("output_reject_in_out.type", Auth::user()->Groupp);
+            where("output_reject_in.type", Auth::user()->Groupp);
             if ($this->rejectInOutSearch) {
                 $rejectInOutQuery->whereRaw("(
-                    COALESCE(output_reject_in_out.reworked_at, output_reject_in_out.updated_at) LIKE '%".$this->rejectInOutSearch."%' OR
+                    COALESCE(output_reject_in.reworked_at, output_reject_in.updated_at) LIKE '%".$this->rejectInOutSearch."%' OR
                     master_plan.tgl_plan LIKE '%".$this->rejectInOutSearch."%' OR
                     master_plan.sewing_line LIKE '%".$this->rejectInOutSearch."%' OR
                     act_costing.kpno LIKE '%".$this->rejectInOutSearch."%' OR
                     act_costing.styleno LIKE '%".$this->rejectInOutSearch."%' OR
                     master_plan.color LIKE '%".$this->rejectInOutSearch."%' OR
                     output_defect_types.defect_type LIKE '%".$this->rejectInOutSearch."%' OR
-                    output_reject_in_out.status LIKE '%".$this->rejectInOutSearch."%' OR
+                    output_reject_in.status LIKE '%".$this->rejectInOutSearch."%' OR
                     so_det.size LIKE '%".$this->rejectInOutSearch."%'
                 )");
             }
             if ($this->dateFrom) {
-                $rejectInOutQuery->whereRaw("DATE(COALESCE(output_reject_in_out.reworked_at, output_reject_in_out.updated_at)) >= '".$this->dateFrom."'");
+                $rejectInOutQuery->whereRaw("DATE(COALESCE(output_reject_in.reworked_at, output_reject_in.updated_at)) >= '".$this->dateFrom."'");
             }
             if ($this->dateTo) {
-                $rejectInOutQuery->whereRaw("DATE(COALESCE(output_reject_in_out.reworked_at, output_reject_in_out.updated_at)) <= '".$this->dateTo."'");
+                $rejectInOutQuery->whereRaw("DATE(COALESCE(output_reject_in.reworked_at, output_reject_in.updated_at)) <= '".$this->dateTo."'");
             }
             $latestRejectInOut = $rejectInOutQuery->
                 groupByRaw("
@@ -84,10 +84,10 @@ class HistoryContent extends Component
                     master_plan.id,
                     output_defect_types.id,
                     output_rejects.so_det_id,
-                    COALESCE(output_reject_in_out.reworked_at, output_reject_in_out.updated_at)
+                    COALESCE(output_reject_in.reworked_at, output_reject_in.updated_at)
                 ")->
-                orderBy("output_reject_in_out.updated_at", "desc")->
-                orderBy("output_reject_in_out.reworked_at", "desc")->
+                orderBy("output_reject_in.updated_at", "desc")->
+                orderBy("output_reject_in.reworked_at", "desc")->
                 paginate(10, ['*'], 'lastRejectInOut');
 
         return view('livewire.history-content', [

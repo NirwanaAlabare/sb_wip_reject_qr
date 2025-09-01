@@ -16,25 +16,21 @@ class RejectOutDetail extends Model
 
     protected $fillable = [
         'id',
+        'reject_in_id',
         'reject_out_id',
-        'no_trans',
-        'tujuan',
         'created_by',
         'created_by_username',
         'created_at',
         'updated_at',
     ];
 
-    public static function lastId(): string
+    public function rejectIn()
     {
-        $prefix = "R".date("dmy");
-        $max = DB::table("output_reject_out_detail")->selectRaw("MAX(CAST(SUBSTRING_INDEX(no_trans, '/', -1) AS UNSIGNED)) as max_id")->whereRaw("SUBSTRING_INDEX(no_trans, '/', 0) LIKE '%" . $prefix . "%'")->value('max_id');
-
-        return $max ? $max : 0;
+        return $this->belongsTo(RejectIn::class, 'reject_in_id', 'id');
     }
 
-    public function rejectInOut()
+    public function rejectOut()
     {
-        return $this->belongsTo(RejectInOut::class, 'reject_in_id', 'id');
+        return $this->belongsTo(RejectOut::class, 'reject_out_id', 'id');
     }
 }

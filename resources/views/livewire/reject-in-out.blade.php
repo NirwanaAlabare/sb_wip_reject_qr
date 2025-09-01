@@ -1,5 +1,5 @@
 <div>
-    <div class="loading-container-fullscreen" wire:loading wire:target="changeMode, preSubmitRejectIn, submitRejectIn, refreshComponent, addRejectDetail, removeRejectDetail, resetRejectDetails, rejectInQuality, setRejectType, setRejectArea, selectRejectAreaPosition, showRejectAreaImage, showMultiRejectAreaImage, addRejectOutSelectedList, removeRejectOutSelectedList">
+    <div class="loading-container-fullscreen" wire:loading wire:target="changeMode, preSubmitRejectIn, submitRejectIn, refreshComponent, addRejectDetail, removeRejectDetail, resetRejectDetails, rejectInQuality, setRejectType, setRejectArea, selectRejectAreaPosition, showRejectAreaImage, showMultiRejectAreaImage, addRejectOutSelectedList, removeRejectOutSelectedList, sendRejectOut">
         <div class="loading-container">
             <div class="loading"></div>
         </div>
@@ -530,20 +530,26 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $rejectOutSelectedListGroup = collect($rejectOutSelectedList)->groupBy("grouping");
-                                        @endphp
-                                        @if ($rejectOutSelectedListGroup && count($rejectOutSelectedListGroup))
-                                            @foreach ($rejectOutSelectedListGroup as $list)
-                                                <tr>
-                                                    <td class="text-nowrap">{{ $list->first()['kpno'] }}</td>
-                                                    <td class="text-nowrap">{{ $list->first()['styleno'] }}</td>
-                                                    <td class="text-nowrap">{{ $list->first()['color'] }}</td>
-                                                    <td class="text-nowrap">{{ $list->first()['size'] }}</td>
-                                                    <td class="text-nowrap">{{ $list->first()['grade'] }}</td>
-                                                    <td class="text-nowrap">{{ $list->count() }}</td>
-                                                </tr>
-                                            @endforeach
+                                        @if (count($rejectOutSelectedList) > 0)
+                                            @php
+                                                $rejectOutSelectedListGroup = collect($rejectOutSelectedList)->groupBy("grouping");
+                                            @endphp
+                                            @if ($rejectOutSelectedListGroup && count($rejectOutSelectedListGroup))
+                                                @foreach ($rejectOutSelectedListGroup as $list)
+                                                    <tr>
+                                                        <td class="text-nowrap">{{ $list->first()['kpno'] }}</td>
+                                                        <td class="text-nowrap">{{ $list->first()['styleno'] }}</td>
+                                                        <td class="text-nowrap">{{ $list->first()['color'] }}</td>
+                                                        <td class="text-nowrap">{{ $list->first()['size'] }}</td>
+                                                        <td class="text-nowrap">{{ $list->first()['grade'] }}</td>
+                                                        <td class="text-nowrap">{{ $list->count() }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            @endif
+                                        @else
+                                            <tr>
+                                                <td colspan="5">Tidak ada data yang dipilih</td>
+                                            </tr>
                                         @endif
                                     </tbody>
                                 </table>
@@ -983,11 +989,13 @@
             }
         });
 
-        function rejectOutReload(process) {
+        function rejectOutReload(process = null) {
             if (process) {
                 switchRejectOutProcess(process);
 
                 $("#reject-out-process").val(process).trigger("change");
+                $("#reject-out-table").DataTable().ajax.reload();
+            } else {
                 $("#reject-out-table").DataTable().ajax.reload();
             }
         }
@@ -1039,7 +1047,7 @@
                 url: "{{ route('get-reject-out-number') }}",
                 success: function (response) {
                     document.getElementById("reject-out-no-transaksi").value = response;
-                    @this.rejectOutNoTransaksi =  response;
+                    @this.rejectOutNoTransaksi = response;
                 },
                 error: function (jqXHR) {
                     console.error(jqXHR);
@@ -1061,6 +1069,13 @@
                 }
             });
         }
+
+        Livewire.on('refreshRejectOutNumber', function() {
+            rejectOutSelectedListArr = [];
+            getRejectOutNumber();
+            rejectOutReload();
+            $("#send-reject-modal").modal("hide");
+        })
 
         // Reject In Out
         let rejectInOutDatatable = $("#reject-in-out-table").DataTable({

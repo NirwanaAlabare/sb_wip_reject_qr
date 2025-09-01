@@ -26,7 +26,7 @@ class RejectInDetail extends Model
 
     public function rejectInOut()
     {
-        return $this->belongsTo(RejectInOut::class, 'reject_in_id', 'id');
+        return $this->belongsTo(RejectIn::class, 'reject_in_id', 'id');
     }
 
     public function rejectInDetailPosition()

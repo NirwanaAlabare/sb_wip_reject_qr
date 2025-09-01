@@ -5,13 +5,13 @@ namespace App\Models\SignalBit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RejectInOut extends Model
+class RejectIn extends Model
 {
     use HasFactory;
 
     protected $connection = 'mysql_sb';
 
-    protected $table = 'output_reject_in_out';
+    protected $table = 'output_reject_in';
 
     protected $fillable = [
         'id',
