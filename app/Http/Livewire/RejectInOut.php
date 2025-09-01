@@ -92,7 +92,7 @@ class RejectInOut extends Component
     public function mount()
     {
         $this->date = date('Y-m-d');
-        $this->mode = 'out';
+        $this->mode = 'in';
         $this->lines = null;
         $this->orders = null;
 
@@ -771,10 +771,16 @@ class RejectInOut extends Component
                                     case "reworked" :
                                         // Undo Reject
                                         $currentReject = Reject::where("id", $scannedReject->id)->first();
-                                        if ($currentReject && $currentReject->defect_id > 0) {
-                                            Defect::where("id", $currentReject->defect_id)->update(["defect_status" => "defect"]);
+                                        if ($currentReject) {
+                                            if ($currentReject->defect_id > 0) {
+                                                Defect::where("id", $currentReject->defect_id)->update(["defect_status" => "defect"]);
+                                            }
+
+                                            $currentReject->delete();
                                         }
-                                        $currentReject->delete();
+
+                                        // Update Reject In
+                                        $createRejectIn->update(["process" => "sent"]);
 
                                         break;
                                     default :

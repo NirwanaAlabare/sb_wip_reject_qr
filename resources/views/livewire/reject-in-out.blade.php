@@ -589,10 +589,16 @@
                                             @endif
                                         @else
                                             <tr>
-                                                <td colspan="5">Tidak ada data yang dipilih</td>
+                                                <td colspan="6">Tidak ada data yang dipilih</td>
                                             </tr>
                                         @endif
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="5">Total</td>
+                                            <td>{{ count($rejectOutSelectedList) }}</td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -728,9 +734,7 @@
         }
 
         Livewire.hook('message.processed', () => {
-            setTimeout(() => {
-                initRejectSelect2();
-            }, 50);
+            initRejectSelect2();
         });
 
         // Reinit Reject Modal Select2
