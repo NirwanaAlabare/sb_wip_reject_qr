@@ -770,6 +770,8 @@
 
             $('#button-out').on('click', async function (e) {
                 @this.changeMode("out")
+                $("#reject-out-table-sent").DataTable().ajax.reload();
+                $("#reject-out-table-wip").DataTable().ajax.reload();
             })
 
             $('#button-in-out').on('click', async function (e) {
@@ -1081,10 +1083,22 @@
                         if (data == "rejected") {
                             textColor = "text-reject";
                         } else {
-                            textColor = "text-rework";
+                            textColor = "text-success";
                         }
 
-                        return `<span class="`+textColor+` fw-bold">`+(data ? data.toUpperCase() : '-')+`</span>`;
+                        return `<span class="`+textColor+` fw-bold">`+(data == "reworked" ? "GOOD" : 'REJECT')+`</span>`;
+                    }
+                },
+                {
+                    targets: [11],
+                    render: (data, type, row, meta) => {
+                        return data ? data : "-";
+                    }
+                },
+                {
+                    targets: [12],
+                    render: (data, type, row, meta) => {
+                        return data ? data : "-";
                     }
                 },
                 {
@@ -1181,7 +1195,6 @@
                     targets: [0],
                     className: "text-center text-nowrap align-middle",
                     render: (data, type, row, meta) => {
-                        console.log(JSON.stringify(row));
                         return "<button class='btn btn-sb-secondary' onclick='showRejectOutDetail(" + JSON.stringify(row) + ");'><i class='fa fa-magnifying-glass'></i></button>";
                     }
                 },
@@ -1526,7 +1539,7 @@
 
                     let res = jqXHR.responseJSON;
                     let message = '';
-                    console.log(res.message);
+
                     for (let key in res.errors) {
                         message += res.errors[key]+' ';
                         document.getElementById(key).classList.add('is-invalid');
@@ -1709,7 +1722,6 @@
                     },
                     dataType: 'json',
                     success: function (response) {
-                        console.log(response);
                         if (response) {
                             $("#rejectInOutDetailIn").val(response.rejectIn);
                             $("#rejectInOutDetailProcess").val(response.defectProcess);
@@ -1784,7 +1796,6 @@
 
                     let res = jqXHR.responseJSON;
                     let message = '';
-                    console.log(res.message);
                     for (let key in res.errors) {
                         message += res.errors[key]+' ';
                         document.getElementById(key).classList.add('is-invalid');
