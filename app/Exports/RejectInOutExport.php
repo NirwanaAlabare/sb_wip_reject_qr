@@ -25,9 +25,9 @@ class RejectInOutExport implements FromView, ShouldAutoSize
 
     public function view(): View
     {
-        $rejectInOutQuery = DefectInOut::selectRaw("
+        $rejectInOutQuery = $rejectInOutQuery = RejectIn::selectRaw("
                 output_reject_in.created_at time_in,
-                output_reject_in.reworked_at time_out,
+                output_reject_in.updated_at time_out,
                 (CASE WHEN output_reject_in.output_type = 'packing' THEN master_plan_packing.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN master_plan_finish.sewing_line ELSE master_plan.sewing_line END) END) sewing_line,
                 output_reject_in.output_type,
                 output_reject_in.kode_numbering,
@@ -40,10 +40,14 @@ class RejectInOutExport implements FromView, ShouldAutoSize
                 (CASE WHEN output_reject_in.output_type = 'packing' THEN master_plan_packing.gambar ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN master_plan_finish.gambar ELSE master_plan.gambar END) END) gambar,
                 (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.reject_area_x ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.defect_area_x ELSE output_rejects.reject_area_x END) END) reject_area_x,
                 (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.reject_area_y ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.defect_area_y ELSE output_rejects.reject_area_y END) END) reject_area_y,
-                output_reject_in.status
+                output_reject_in.status,
+                output_reject_in.grade,
+                GROUP_CONCAT(output_defect_types_reject.defect_type SEPARATOR ' , ') defect_types_check,
+                GROUP_CONCAT(output_defect_areas_reject.defect_area SEPARATOR ' , ') defect_areas_check,
+                GROUP_CONCAT(CONCAT_WS(' // ', output_defect_types_reject.defect_type, output_reject_in_detail.reject_area_x, output_reject_in_detail.reject_area_y) SEPARATOR ' | ') reject_area_position
             ")->
             // Defect
-            leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in.defect_id")->
+            leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in.reject_id")->
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
             leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects.reject_area_id")->
             leftJoin("so_det", "so_det.id", "=", "output_rejects.so_det_id")->
@@ -51,26 +55,33 @@ class RejectInOutExport implements FromView, ShouldAutoSize
             leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
             leftJoin("master_plan", "master_plan.id", "=", "output_rejects.master_plan_id")->
             // Defect Packing
-            leftJoin("output_rejects_packing", "output_rejects_packing.id", "=", "output_reject_in.defect_id")->
-            leftJoin("output_defect_types as output_defect_types_packing", "output_defect_types_packing.id", "=", "output_rejects_packing.defect_type_id")->
-            leftJoin("output_defect_areas as output_defect_areas_packing", "output_defect_areas_packing.id", "=", "output_rejects_packing.defect_area_id")->
+            leftJoin("output_rejects_packing", "output_rejects_packing.id", "=", "output_reject_in.reject_id")->
+            leftJoin("output_defect_types as output_defect_types_packing", "output_defect_types_packing.id", "=", "output_rejects_packing.reject_type_id")->
+            leftJoin("output_defect_areas as output_defect_areas_packing", "output_defect_areas_packing.id", "=", "output_rejects_packing.reject_area_id")->
             leftJoin("so_det as so_det_packing", "so_det_packing.id", "=", "output_rejects_packing.so_det_id")->
             leftJoin("so as so_packing", "so_packing.id", "=", "so_det_packing.id_so")->
             leftJoin("act_costing as act_costing_packing", "act_costing_packing.id", "=", "so_packing.id_cost")->
             leftJoin("master_plan as master_plan_packing", "master_plan_packing.id", "=", "output_rejects_packing.master_plan_id")->
+            // Defect Finishing
+            leftJoin("output_check_finishing", "output_check_finishing.id", "=", "output_reject_in.reject_id")->
+            leftJoin("output_defect_types as output_defect_types_finish", "output_defect_types_finish.id", "=", "output_check_finishing.defect_type_id")->
+            leftJoin("output_defect_areas as output_defect_areas_finish", "output_defect_areas_finish.id", "=", "output_check_finishing.defect_area_id")->
+            leftJoin("so_det as so_det_finish", "so_det_finish.id", "=", "output_check_finishing.so_det_id")->
+            leftJoin("so as so_finish", "so_finish.id", "=", "so_det_finish.id_so")->
+            leftJoin("act_costing as act_costing_finish", "act_costing_finish.id", "=", "so_finish.id_cost")->
+            leftJoin("master_plan as master_plan_finish", "master_plan_finish.id", "=", "output_check_finishing.master_plan_id")->
+            // Reject Detail
+            leftJoin("output_reject_in_detail", "output_reject_in_detail.reject_in_id", "=", "output_reject_in.id")->
+            leftJoin("output_defect_types as output_defect_types_reject", "output_defect_types_reject.id", "=", "output_reject_in_detail.reject_type_id")->
+            leftJoin("output_defect_areas as output_defect_areas_reject", "output_defect_areas_reject.id", "=", "output_reject_in_detail.reject_area_id")->
             // Conditional
-            where("output_reject_in.type", strtolower(Auth::user()->Groupp))->
             whereBetween("output_reject_in.created_at", [$this->dateFrom." 00:00:00", $this->dateTo." 23:59:59"])->
-            whereRaw("
-                (
-                    output_reject_in.id IS NOT NULL AND
-                    (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE (CASE WHEN output_reject_in.output_type = 'qc' THEN output_rejects.id ELSE null END) END) END) IS NOT NULL
-                )
-            ")->
             groupBy("output_reject_in.id")->
             get();
 
         return view('exports.reject-in-out', [
+            'dateFrom' => $this->dateFrom,
+            'dateTo' => $this->dateTo,
             'rejectInOut' => $rejectInOutQuery
         ]);
     }

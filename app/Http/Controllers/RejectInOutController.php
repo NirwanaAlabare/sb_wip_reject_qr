@@ -283,13 +283,13 @@ class RejectInOutController extends Controller
         $rejectInOutDaily = RejectIn::selectRaw("
                 DATE(output_reject_in.created_at) tanggal,
                 SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL THEN 1 ELSE 0 END) total_in,
-                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in.status = 'defect' THEN 1 ELSE 0 END) total_process,
-                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in.status = 'reworked' THEN 1 ELSE 0 END) total_out
+                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in.status = 'rejected' THEN 1 ELSE 0 END) total_reject,
+                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in.status = 'reworked' THEN 1 ELSE 0 END) total_good
             ")->
             leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in.reject_id")->
             leftJoin("output_rejects_packing", "output_rejects_packing.id", "=", "output_reject_in.reject_id")->
             leftJoin("output_check_finishing", "output_check_finishing.id", "=", "output_reject_in.reject_id")->
-            where("output_reject_in.type", strtolower(Auth::user()->Groupp))->
+
             whereBetween("output_reject_in.created_at", [$dateFrom." 00:00:00", $dateTo." 23:59:59"])->
             groupByRaw("DATE(output_reject_in.created_at)")->
             get();
@@ -300,7 +300,7 @@ class RejectInOutController extends Controller
     public function getRejectInOutDetail(Request $request) {
         $rejectInOutQuery = RejectIn::selectRaw("
                 output_reject_in.created_at time_in,
-                output_reject_in.reworked_at time_out,
+                output_reject_in.updated_at time_out,
                 (CASE WHEN output_reject_in.output_type = 'packing' THEN master_plan_packing.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN master_plan_finish.sewing_line ELSE master_plan.sewing_line END) END) sewing_line,
                 output_reject_in.output_type,
                 output_reject_in.kode_numbering,
@@ -313,7 +313,11 @@ class RejectInOutController extends Controller
                 (CASE WHEN output_reject_in.output_type = 'packing' THEN master_plan_packing.gambar ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN master_plan_finish.gambar ELSE master_plan.gambar END) END) gambar,
                 (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.reject_area_x ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.defect_area_x ELSE output_rejects.reject_area_x END) END) reject_area_x,
                 (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.reject_area_y ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.defect_area_y ELSE output_rejects.reject_area_y END) END) reject_area_y,
-                output_reject_in.status
+                output_reject_in.status,
+                output_reject_in.grade,
+                GROUP_CONCAT(output_defect_types_reject.defect_type SEPARATOR ' , ') defect_types_check,
+                GROUP_CONCAT(output_defect_areas_reject.defect_area SEPARATOR ' , ') defect_areas_check,
+                GROUP_CONCAT(CONCAT_WS(' // ', output_defect_types_reject.defect_type, output_reject_in_detail.reject_area_x, output_reject_in_detail.reject_area_y) SEPARATOR ' | ') reject_area_position
             ")->
             // Defect
             leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in.reject_id")->
@@ -339,8 +343,11 @@ class RejectInOutController extends Controller
             leftJoin("so as so_finish", "so_finish.id", "=", "so_det_finish.id_so")->
             leftJoin("act_costing as act_costing_finish", "act_costing_finish.id", "=", "so_finish.id_cost")->
             leftJoin("master_plan as master_plan_finish", "master_plan_finish.id", "=", "output_check_finishing.master_plan_id")->
+            // Reject Detail
+            leftJoin("output_reject_in_detail", "output_reject_in_detail.reject_in_id", "=", "output_reject_in.id")->
+            leftJoin("output_defect_types as output_defect_types_reject", "output_defect_types_reject.id", "=", "output_reject_in_detail.reject_type_id")->
+            leftJoin("output_defect_areas as output_defect_areas_reject", "output_defect_areas_reject.id", "=", "output_reject_in_detail.reject_area_id")->
             // Conditional
-            where("output_reject_in.type", strtolower(Auth::user()->Groupp))->
             whereBetween("output_reject_in.created_at", [$request->tanggal." 00:00:00", $request->tanggal." 23:59:59"])->
             whereRaw("
                 (
@@ -398,8 +405,9 @@ class RejectInOutController extends Controller
             leftJoin("so as so_finish", "so_finish.id", "=", "so_det_finish.id_so")->
             leftJoin("act_costing as act_costing_finish", "act_costing_finish.id", "=", "so_finish.id_cost")->
             leftJoin("master_plan as master_plan_finish", "master_plan_finish.id", "=", "output_check_finishing.master_plan_id")->
+            // Reject Detail
+            leftJoin("output_reject_in_detail", "output_reject_in_detail.reject_in_id", "=", "output_reject_in.id")->
             // Conditional
-            where("output_reject_in.type", strtolower(Auth::user()->Groupp))->
             whereBetween("output_reject_in.created_at", [$request->tanggal." 00:00:00", $request->tanggal." 23:59:59"])->
             whereRaw("
                 (
@@ -412,7 +420,7 @@ class RejectInOutController extends Controller
             groupBy("output_reject_in.id")->
             get();
 
-        return array("defectIn" => $rejectInOutQuery->count(), "defectProcess" => $rejectInOutQuery->where("status", "reject")->count(), "defectOut" => $rejectInOutQuery->where("status", "reworked")->count());
+        return array("defectIn" => $rejectInOutQuery->count(), "totalReject" => $rejectInOutQuery->where("status", "rejected")->count(), "totalGood" => $rejectInOutQuery->where("status", "reworked")->count());
     }
 
     public function exportRejectOutDetail(Request $request) {

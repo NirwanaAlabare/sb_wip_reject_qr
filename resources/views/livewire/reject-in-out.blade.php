@@ -259,18 +259,18 @@
                                 </div>
                             </div>
                             <div class="mb-3" wire:ignore>
-                                <button class="btn btn-success" onclick="rejectInOutDetailExport(this)" wire:ignore><i class="fa fa-file-excel"></i> Export</button>
+                                <button class="btn btn-success" onclick="rejectInOutExport(this)" wire:ignore><i class="fa fa-file-excel"></i> Export</button>
                             </div>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-bordered w-100" id="reject-in-out-table" >
+                            <table class="table table-bordered w-100" id="reject-in-out-table" wire:ignore>
                                 <thead>
                                     <tr>
                                         <th>Action</th>
                                         <th>Date</th>
-                                        <th>Total IN</th>
-                                        <th>Total PROCESS</th>
-                                        <th>Total OUT</th>
+                                        <th>Total CHECK</th>
+                                        <th>Total GOOD</th>
+                                        <th>Total REJECT</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -321,18 +321,14 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="row g-1 mb-3">
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">IN</label>
-                                    <input type="text" class="form-control" id="rejectInOutDetailIn" readonly>
+                            <div class="row rpw-gap-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">GOOD</label>
+                                    <input type="text" class="form-control" id="rejectInOutDetailGood" readonly>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">PROCESS</label>
-                                    <input type="text" class="form-control" id="rejectInOutDetailProcess" readonly>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">OUT</label>
-                                    <input type="text" class="form-control" id="rejectInOutDetailOut" readonly>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">REJECT</label>
+                                    <input type="text" class="form-control" id="rejectInOutDetailReject" readonly>
                                 </div>
                             </div>
                         </div>
@@ -341,19 +337,20 @@
                                 <table class="table table-bordered w-100" id="reject-in-out-detail-table">
                                     <thead>
                                         <tr>
-                                            <th>Time IN</th>
-                                            <th>Time OUT</th>
-                                            <th>Line</th>
-                                            <th>Dept.</th>
                                             <th>QR</th>
+                                            <th>Waktu Cek</th>
+                                            <th>Dept.</th>
+                                            <th>Line</th>
                                             <th>No. WS</th>
                                             <th>Style</th>
                                             <th>Color</th>
                                             <th>Size</th>
-                                            <th>Type</th>
-                                            <th>Area</th>
+                                            <th>Defect Type QC</th>
+                                            <th>Quality Check</th>
+                                            <th>Grade</th>
+                                            <th>Defect Type Check</th>
+                                            <th>Defect Area Check</th>
                                             <th>Image</th>
-                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -827,7 +824,10 @@
             Livewire.emit('showRejectAreaImage', defectAreaImage, x, y);
         }
 
-        Livewire.on('showRejectAreaImage', async function (defectAreaImage, x, y) {
+        Livewire.on('showRejectAreaImage', async function (defectAreaImage, xParam, yParam) {
+            let x = Number(xParam) > 0 && xParam != Infinity ? xParam : 0;
+            let y = Number(yParam) > 0 && yParam != Infinity ? yParam : 0;
+
             await showRejectAreaImage(defectAreaImage);
 
             let defectAreaImageElement = document.getElementById('reject-area-img-show');
@@ -849,6 +849,9 @@
             defectAreaImagePointElement.style.left =  'calc('+x+'% - '+0.5 * pointWidth+'px)';
             defectAreaImagePointElement.style.top =  'calc('+y+'% - '+0.5 * pointWidth+'px)';
             defectAreaImagePointElement.style.display = 'block';
+
+            document.getElementById("reject-area-img-types").parentElement.classList.add("d-none");
+            document.getElementById("reject-area-img-types").classList.add("d-none");
         });
 
         function onHideRejectAreaImage() {
@@ -910,6 +913,8 @@
 
                         list.appendChild(badge);
                         document.getElementById("reject-area-img-types").appendChild(list);
+                        document.getElementById("reject-area-img-types").parentElement.classList.remove("d-none");
+                        document.getElementById("reject-area-img-types").classList.remove("d-none");
 
                         // Area
                         let x = Number(typePositions[1]) > 0 && typePositions[1] != Infinity ? typePositions[1] : 0;
@@ -1582,10 +1587,10 @@
                     data: 'total_in',
                 },
                 {
-                    data: 'total_process',
+                    data: 'total_good',
                 },
                 {
-                    data: 'total_out',
+                    data: 'total_reject',
                 }
             ],
             columnDefs: [
@@ -1623,19 +1628,16 @@
             },
             columns: [
                 {
+                    data: 'kode_numbering',
+                },
+                {
                     data: 'time_in',
-                },
-                {
-                    data: 'time_out',
-                },
-                {
-                    data: 'sewing_line',
                 },
                 {
                     data: 'output_type',
                 },
                 {
-                    data: 'kode_numbering',
+                    data: 'sewing_line',
                 },
                 {
                     data: 'no_ws',
@@ -1653,24 +1655,24 @@
                     data: 'defect_type',
                 },
                 {
-                    data: 'defect_area',
+                    data: 'status',
+                },
+                {
+                    data: 'grade',
+                },
+                {
+                    data: 'defect_types_check',
+                },
+                {
+                    data: 'defect_areas_check',
                 },
                 {
                     data: 'gambar',
-                },
-                {
-                    data: 'status',
                 },
             ],
             columnDefs: [
                 {
                     targets: [2],
-                    render: (data, type, row, meta) => {
-                        return data ? data.replace("_", " ").toUpperCase() : '-';
-                    }
-                },
-                {
-                    targets: [3],
                     render: (data, type, row, meta) => {
                         let textColor = '';
 
@@ -1684,23 +1686,33 @@
                     }
                 },
                 {
-                    targets: [11],
+                    targets: [3],
                     render: (data, type, row, meta) => {
-                        return `<button class="btn btn-dark" onclick="onShowRejectAreaImage('`+row.gambar+`', `+row.reject_area_x+`, `+row.reject_area_y+`)"><i class="fa fa-image"></i></button>`
+                        return data ? data.replace("_", " ").toUpperCase() : '-';
                     }
                 },
                 {
-                    targets: [12],
+                    targets: [9],
                     render: (data, type, row, meta) => {
                         let textColor = '';
 
                         if (data == "reworked") {
-                            textColor = "text-rework";
+                            textColor = "text-success";
                         } else {
-                            textColor = "text-defect";
+                            textColor = "text-danger";
                         }
 
-                        return `<span class="`+textColor+` fw-bold">`+(data ? data.toUpperCase() : '-')+`</span>`;
+                        return `<span class="`+textColor+` fw-bold">`+(data == "reworked" ? 'GOOD' : 'REJECT')+`</span>`;
+                    }
+                },
+                {
+                    targets: [13],
+                    render: (data, type, row, meta) => {
+                        if (row.reject_area_position) {
+                            return `<button class="btn btn-dark" onclick="onShowMultiRejectAreaImage('`+row.gambar+`', '`+row.reject_area_position+`')"><i class="fa fa-image"></i></button>`;
+                        } else {
+                            return `<button class="btn btn-dark" onclick="onShowRejectAreaImage('`+row.gambar+`', `+row.reject_area_x+`, `+row.reject_area_y+`)"><i class="fa fa-image"></i></button>`;
+                        }
                     }
                 },
                 {
@@ -1712,9 +1724,8 @@
 
         function rejectInOutDetailReload() {
             $("#reject-in-out-detail-table").DataTable().ajax.reload(() => {
-                $("#rejectInOutDetailIn").val("-");
-                $("#rejectInOutDetailProcess").val("-");
-                $("#rejectInOutDetailOut").val("-");
+                $("#rejectInOutDetailGood").val("-");
+                $("#rejectInOutDetailReject").val("-");
 
                 $.ajax({
                     url: "{{ route("get-reject-in-out-detail-total") }}",
@@ -1727,9 +1738,8 @@
                     dataType: 'json',
                     success: function (response) {
                         if (response) {
-                            $("#rejectInOutDetailIn").val(response.rejectIn);
-                            $("#rejectInOutDetailProcess").val(response.defectProcess);
-                            $("#rejectInOutDetailOut").val(response.rejectOut);
+                            $("#rejectInOutDetailGood").val(response.totalGood);
+                            $("#rejectInOutDetailReject").val(response.totalReject);
                         }
                     },
                     error: function (jqXHR) {
@@ -1750,7 +1760,7 @@
         }
 
         // Reject In Out Export
-        function exportExcel(elm) {
+        function rejectInOutExport(elm) {
             elm.setAttribute('disabled', 'true');
             elm.innerText = "";
             let loading = document.createElement('div');
