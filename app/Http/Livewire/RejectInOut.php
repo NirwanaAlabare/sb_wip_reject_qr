@@ -173,7 +173,9 @@ class RejectInOut extends Component
                     output_rejects.updated_at,
                     output_rejects.kode_numbering,
                     output_rejects.so_det_id,
+                    output_defect_types.id as defect_type_id,
                     output_defect_types.defect_type,
+                    output_defect_areas.id as defect_area_id,
                     output_defect_areas.defect_area,
                     master_plan.id master_plan_id,
                     act_costing.kpno ws,
@@ -206,7 +208,9 @@ class RejectInOut extends Component
                         output_check_finishing.updated_at,
                         output_check_finishing.kode_numbering,
                         output_check_finishing.so_det_id,
+                        output_defect_types.id as defect_type_id,
                         output_defect_types.defect_type,
+                        output_defect_areas.id as defect_area_id,
                         output_defect_areas.defect_area,
                         master_plan.id master_plan_id,
                         act_costing.kpno ws,
@@ -240,7 +244,9 @@ class RejectInOut extends Component
                             output_rejects_packing.updated_at,
                             output_rejects_packing.kode_numbering,
                             output_rejects_packing.so_det_id,
+                            output_defect_types.id as defect_type_id,
                             output_defect_types.defect_type,
+                            output_defect_areas.id as defect_area_id,
                             output_defect_areas.defect_area,
                             master_plan.id master_plan_id,
                             act_costing.kpno ws,
@@ -276,7 +282,9 @@ class RejectInOut extends Component
                     output_rejects_packing.updated_at,
                     output_rejects_packing.kode_numbering,
                     output_rejects_packing.so_det_id,
+                    output_defect_types.id as defect_type_id,
                     output_defect_types.defect_type,
+                    output_defect_areas.id as defect_area_id,
                     output_defect_areas.defect_area,
                     master_plan.id master_plan_id,
                     act_costing.kpno ws,
@@ -306,7 +314,9 @@ class RejectInOut extends Component
                     output_check_finishing.updated_at,
                     output_check_finishing.kode_numbering,
                     output_check_finishing.so_det_id,
+                    output_defect_types.id as defect_type_id,
                     output_defect_types.defect_type,
+                    output_defect_areas.id as defect_area_id,
                     output_defect_areas.defect_area,
                     master_plan.id master_plan_id,
                     act_costing.kpno ws,
@@ -337,7 +347,9 @@ class RejectInOut extends Component
                     output_rejects.updated_at,
                     output_rejects.kode_numbering,
                     output_rejects.so_det_id,
+                    output_defect_types.id as defect_type_id,
                     output_defect_types.defect_type,
+                    output_defect_areas.id as defect_area_id,
                     output_defect_areas.defect_area,
                     master_plan.id master_plan_id,
                     act_costing.kpno ws,
@@ -522,7 +534,12 @@ class RejectInOut extends Component
                     output_rejects.id,
                     output_rejects.reject_status,
                     output_rejects.kode_numbering,
+                    output_rejects.reject_area_x,
+                    output_rejects.reject_area_y,
+                    output_defect_types.id as defect_type_id,
                     output_defect_types.defect_type,
+                    output_defect_areas.id as defect_area_id,
+                    output_defect_areas.defect_area,
                     act_costing.kpno ws,
                     act_costing.styleno style,
                     so_det.color,
@@ -540,6 +557,7 @@ class RejectInOut extends Component
                 leftJoin("master_plan", "master_plan.id", "=", "output_rejects.master_plan_id")->
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
+                leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects.reject_area_id")->
                 leftJoin("output_reject_in", function ($join) {
                     $join->on("output_reject_in.id", "=", "output_rejects.id");
                     $join->on("output_reject_in.output_type", "=", DB::raw("'qc'"));
@@ -554,7 +572,12 @@ class RejectInOut extends Component
                         output_check_finishing.id,
                         output_check_finishing.status as reject_status,
                         output_check_finishing.kode_numbering,
+                        output_check_finishing.defect_area_x as reject_area_x,
+                        output_check_finishing.defect_area_y as reject_area_y,
+                        output_defect_types.id as defect_type_id,
                         output_defect_types.defect_type,
+                        output_defect_areas.id as defect_area_id,
+                        output_defect_areas.defect_area,
                         act_costing.kpno ws,
                         act_costing.styleno style,
                         so_det.color,
@@ -572,6 +595,7 @@ class RejectInOut extends Component
                     leftJoin("master_plan", "master_plan.id", "=", "output_check_finishing.master_plan_id")->
                     leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                     leftJoin("output_defect_types", "output_defect_types.id", "=", "output_check_finishing.defect_type_id")->
+                    leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_check_finishing.defect_area_id")->
                     leftJoin("output_reject_in", function ($join) {
                         $join->on("output_reject_in.id", "=", "output_check_finishing.id");
                         $join->on("output_reject_in.output_type", "=", DB::raw("'qcf'"));
@@ -587,7 +611,12 @@ class RejectInOut extends Component
                             output_rejects_packing.id,
                             output_rejects_packing.reject_status,
                             output_rejects_packing.kode_numbering,
+                            output_rejects_packing.reject_area_x,
+                            output_rejects_packing.reject_area_y,
+                            output_defect_types.id as defect_type_id,
                             output_defect_types.defect_type,
+                            output_defect_areas.id as defect_area_id,
+                            output_defect_areas.defect_area,
                             act_costing.kpno ws,
                             act_costing.styleno style,
                             so_det.color,
@@ -604,6 +633,7 @@ class RejectInOut extends Component
                         leftJoin("master_plan", "master_plan.id", "=", "output_rejects_packing.master_plan_id")->
                         leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                         leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects_packing.reject_type_id")->
+                        leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects_packing.reject_area_id")->
                         leftJoin("output_reject_in", function ($join) {
                             $join->on("output_reject_in.id", "=", "output_rejects_packing.id");
                             $join->on("output_reject_in.output_type", "=", DB::raw("'packing'"));
@@ -622,7 +652,12 @@ class RejectInOut extends Component
                     output_rejects_packing.id,
                     output_rejects_packing.reject_status,
                     output_rejects_packing.kode_numbering,
+                    output_rejects_packing.reject_area_x,
+                    output_rejects_packing.reject_area_y,
+                    output_defect_types.id as defect_type_id,
                     output_defect_types.defect_type,
+                    output_defect_areas.id as defect_area_id,
+                    output_defect_areas.defect_area,
                     act_costing.kpno ws,
                     act_costing.styleno style,
                     so_det.color,
@@ -639,6 +674,7 @@ class RejectInOut extends Component
                 leftJoin("master_plan", "master_plan.id", "=", "output_rejects_packing.master_plan_id")->
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects_packing.reject_type_id")->
+                leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects_packing.reject_area_id")->
                 leftJoin("output_reject_in", function ($join) {
                     $join->on("output_reject_in.id", "=", "output_rejects_packing.id");
                     $join->on("output_reject_in.output_type", "=", DB::raw("'packing'"));
@@ -651,7 +687,12 @@ class RejectInOut extends Component
                     output_check_finishing.id,
                     output_check_finishing.status as reject_status,
                     output_check_finishing.kode_numbering,
+                    output_check_finishing.defect_area_x as reject_area_x,
+                    output_check_finishing.defect_area_y as reject_area_y,
+                    output_defect_types.id as defect_type_id,
                     output_defect_types.defect_type,
+                    output_defect_areas.id as defect_area_id,
+                    output_defect_areas.defect_area,
                     act_costing.kpno ws,
                     act_costing.styleno style,
                     so_det.color,
@@ -669,6 +710,7 @@ class RejectInOut extends Component
                 leftJoin("master_plan", "master_plan.id", "=", "output_check_finishing.master_plan_id")->
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_check_finishing.defect_type_id")->
+                leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_check_finishing.defect_area_id")->
                 leftJoin("output_reject_in", function ($join) {
                     $join->on("output_reject_in.id", "=", "output_check_finishing.id");
                     $join->on("output_reject_in.output_type", "=", DB::raw("'qcf'"));
@@ -681,7 +723,12 @@ class RejectInOut extends Component
                     output_rejects.id,
                     output_rejects.reject_status,
                     output_rejects.kode_numbering,
+                    output_rejects.reject_area_x,
+                    output_rejects.reject_area_y,
+                    output_defect_types.id as defect_type_id,
                     output_defect_types.defect_type,
+                    output_defect_areas.id as defect_area_id,
+                    output_defect_areas.defect_area,
                     act_costing.kpno ws,
                     act_costing.styleno style,
                     so_det.color,
@@ -699,6 +746,7 @@ class RejectInOut extends Component
                 leftJoin("master_plan", "master_plan.id", "=", "output_rejects.master_plan_id")->
                 leftJoin("act_costing", "act_costing.id", "=", "master_plan.id_ws")->
                 leftJoin("output_defect_types", "output_defect_types.id", "=", "output_rejects.reject_type_id")->
+                leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_rejects.reject_area_id")->
                 leftJoin("output_reject_in", function ($join) {
                     $join->on("output_reject_in.id", "=", "output_rejects.id");
                     $join->on("output_reject_in.output_type", "=", DB::raw("'qc'"));
@@ -731,6 +779,10 @@ class RejectInOut extends Component
                                     "kode_numbering" => $scannedReject->kode_numbering,
                                     "type" => $scannedReject->reject_status,
                                     "output_type" => $scannedReject->output_type,
+                                    "reject_type_id" => $scannedReject->defect_type_id,
+                                    "reject_area_id" => $scannedReject->defect_area_id,
+                                    "reject_area_x" => $scannedReject->reject_area_x,
+                                    "reject_area_y" => $scannedReject->reject_area_y,
                                     "status" => $this->rejectInQuality,
                                     "grade" => $this->rejectInGrade,
                                     "process" => "wip",
@@ -1303,15 +1355,16 @@ class RejectInOut extends Component
         // All Defect Summary
         $rejectDaily = RejectIn::selectRaw("
                 DATE(output_reject_in.created_at) tanggal,
-                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL THEN 1 ELSE 0 END) total_in,
-                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in.status = 'reworked' THEN 1 ELSE 0 END) total_good,
-                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN output_rejects_packing.id ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN output_check_finishing.id ELSE output_rejects.id END) END) IS NOT NULL AND output_reject_in.status = 'rejected' THEN 1 ELSE 0 END) total_reject
+                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN 1 ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN 1 ELSE 1 END) END) IS NOT NULL THEN 1 ELSE 0 END) total_in,
+                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN 1 ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN 1 ELSE 1 END) END) IS NOT NULL AND output_reject_in.status = 'rejected' THEN 1 ELSE 0 END) total_reject,
+                SUM(CASE WHEN (CASE WHEN output_reject_in.output_type = 'packing' THEN 1 ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN 1 ELSE 1 END) END) IS NOT NULL AND output_reject_in.status = 'reworked' THEN 1 ELSE 0 END) total_good
             ")->
             leftJoin("output_rejects", "output_rejects.id", "=", "output_reject_in.reject_id")->
             leftJoin("output_rejects_packing", "output_rejects_packing.id", "=", "output_reject_in.reject_id")->
             leftJoin("output_check_finishing", "output_check_finishing.id", "=", "output_reject_in.reject_id")->
             whereBetween("output_reject_in.created_at", [$this->rejectInOutFrom." 00:00:00", $this->rejectInOutTo." 23:59:59"])->
             groupByRaw("DATE(output_reject_in.created_at)")->
+            orderByRaw("DATE(output_reject_in.created_at) desc")->
             get();
 
         $rejectTotal = $rejectDaily->sum("total_in");

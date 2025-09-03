@@ -777,6 +777,8 @@
 
             $('#button-in-out').on('click', async function (e) {
                 @this.changeMode("in-out")
+                rejectInOutReload();
+                rejectInOutDetailReload();
             })
         });
 
