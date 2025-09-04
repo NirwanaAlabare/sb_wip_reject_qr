@@ -1,5 +1,5 @@
 <div>
-    <div class="loading-container-fullscreen" wire:loading wire:target="changeMode, preSubmitRejectIn, submitRejectIn, refreshComponent, addRejectDetail, removeRejectDetail, resetRejectDetails, rejectInQuality, setRejectType, setRejectArea, selectRejectAreaPosition, showRejectAreaImage, showMultiRejectAreaImage, addRejectOutSelectedList, removeRejectOutSelectedList, sendRejectOut">
+    <div class="loading-container-fullscreen" wire:loading wire:target="changeMode, preSubmitRejectIn, submitRejectIn, refreshComponent, addRejectDetail, removeRejectDetail, resetRejectDetails, rejectInQuality, setRejectType, setRejectArea, selectRejectAreaPosition, showRejectAreaImage, showMultiRejectAreaImage, rejectOutSelectedList, rejectOutStatus, addRejectOutSelectedList, removeRejectOutSelectedList, sendRejectOut, setRejectOutTujuan, setRejectOutLine">
         <div class="loading-container">
             <div class="loading"></div>
         </div>
@@ -543,10 +543,22 @@
                             <input type="hidden" class="form-control d-none" wire:model="rejectOutNoTransaksi" readonly>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Tujuan</label>
-                            <select class="form-select" name="reject-out-tujuan" id="reject-out-tujuan" wire:model="rejectOutTujuan">
-                                <option value="gudang">Gudang Stock</option>
-                            </select>
+                            <div id="tujuan-rejected-container" wire:ignore>
+                                <label class="form-label">Tujuan</label>
+                                <select class="form-select select2bs4rejectout" name="reject-out-tujuan" id="reject-out-tujuan" onchange="setRejectOutTujuan(this)">
+                                    <option value="gudang">Gudang Stock</option>
+                                </select>
+                            </div>
+                            <div id="tujuan-reworked-container" class="d-none" wire:ignore>
+                                <label class="form-label">Line</label>
+                                <select class="form-select select2bs4rejectout" name="reject-out-line" id="reject-out-line" onchange="setRejectOutLine(this)">
+                                    <option>Pilih Line</option>
+                                    @foreach ($lines as $line)
+                                        <option value="{{ $line->username }}">{{ str_replace("_", " ", $line->username) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <input type="hidden" class="form-control" wire:model="rejectOutStatus">
                         </div>
                         <div class="col-md-3">
                             <button class="btn btn-sb-secondary w-100" onclick="sendRejectOut()">
@@ -730,8 +742,42 @@
             });
         }
 
+        function initSendRejectSelect2() {
+            $('.select2bs4rejectout').each(function () {
+                if ($(this).hasClass("select2-hidden-accessible")) {
+                    const id = $(this).attr('id');
+                    const $dropdown = $(`.select2-dropdown:has([aria-controls="select2-${id}-results"])`);
+                    const $options = $dropdown.find('.select2-results__option');
+
+                    if ($options.length === 0) {
+                        $(this).select2('destroy').select2({
+                            theme: "bootstrap-5",
+                            width: $(this).data('width')
+                                ? $(this).data('width')
+                                : $(this).hasClass('w-100')
+                                    ? '100%'
+                                    : 'style',
+                            placeholder: $(this).data('placeholder'),
+                            dropdownParent: $('#send-reject-modal')
+                        });
+                    }
+
+                    return;
+                }
+
+                // Re-init
+                $(this).select2({
+                    theme: "bootstrap-5",
+                    width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+                    placeholder: $( this ).data( 'placeholder' ),
+                    dropdownParent: $('#send-reject-modal')
+                });
+            });
+        }
+
         Livewire.hook('message.processed', () => {
             initRejectSelect2();
+            initSendRejectSelect2();
         });
 
         // Reinit Reject Modal Select2
@@ -841,7 +887,7 @@
 
             let pointWidth = null;
             if (rect.width == 0) {
-                pointWidth = 35;
+                pointWidth = 25;
             } else {
                 pointWidth = 0.03 * rect.width;
             }
@@ -879,7 +925,7 @@
 
             let pointWidth = null;
             if (rect.width == 0) {
-                pointWidth = 35;
+                pointWidth = 25;
             } else {
                 pointWidth = 0.03 * rect.width;
             }
@@ -956,6 +1002,8 @@
                 $(this).val(null).trigger("change");
             });
         });
+
+
 
         // REJECT OUT
 
@@ -1053,7 +1101,7 @@
                     render: (data, type, row, meta) => {
                         return `
                             <div class="form-check" style="scale: 1.5;translate: 50%;">
-                                <input class="form-check-input check-stock-number" type="checkbox" onchange="checkRejectOut(this)" id="stock_number_`+meta.row+`">
+                                <input class="form-check-input check-stock-number" type="checkbox" data-status="`+row.status+`" onchange="checkRejectOut(this)" id="stock_number_`+meta.row+`">
                             </div>
                         `;
                     }
@@ -1158,6 +1206,7 @@
             }
         });
 
+        // Reject Out Sent Table
         let rejectOutSentDatatable = $("#reject-out-table-sent").DataTable({
             serverSide: true,
             processing: true,
@@ -1213,7 +1262,7 @@
                     targets: [3],
                     className: "text-center text-nowrap align-middle",
                     render: (data, type, row, meta) => {
-                        return data.toUpperCase();
+                        return data ? data.toUpperCase() : "-";
                     }
                 },
                 {
@@ -1252,20 +1301,23 @@
             }
         });
 
+        // Reject Out Refresh
         function rejectOutReload(process = null) {
             if (process) {
                 $("#reject-out-process").val(process).trigger("change");
 
                 switchRejectOutProcess(process);
-
-                if (process == "sent") {
-                    $("#reject-out-table-sent").DataTable().ajax.reload();
-                } else {
-                    $("#reject-out-table-wip").DataTable().ajax.reload();
-                }
             }
 
+            $("#reject-out-table-sent").DataTable().ajax.reload();
+            $("#reject-out-table-wip").DataTable().ajax.reload();
+
             rejectOutSelectedListArr = [];
+            selectedStatus = "";
+
+            $("#send-reject-modal").modal("hide");
+            $("#reject-out-tujuan").val("");
+            $("#reject-out-line").val("");
         }
 
         // Switch Reject Out
@@ -1300,15 +1352,35 @@
         }
 
         var rejectOutSelectedListArr = [];
+        var selectedStatus = '';
         // Check Reject Out
         function checkRejectOut(element) {
             let data = $('#reject-out-table-wip').DataTable().row(element.closest('tr')).data();
 
             if (data) {
+                let stockNumberCheck =  document.getElementsByClassName('check-stock-number');
                 if (element.checked) {
+                    for (let i = 0; i < stockNumberCheck.length; i++) {
+                        if (stockNumberCheck[i].getAttribute('data-status') != element.getAttribute('data-status')) {
+                            stockNumberCheck[i].setAttribute('disabled', true);
+                        } else {
+                            stockNumberCheck[i].removeAttribute('disabled');
+                        }
+                    }
+
                     rejectOutSelectedListArr.push(data);
+
+                    selectedStatus = element.getAttribute('data-status');
                 } else {
                     rejectOutSelectedListArr = rejectOutSelectedListArr.filter((item) => item.kode_numbering != data.kode_numbering);
+
+                    selectedStatus = '';
+
+                    if (rejectOutSelectedListArr < 1) {
+                        for (let i = 0; i < stockNumberCheck.length; i++) {
+                            stockNumberCheck[i].removeAttribute('disabled');
+                        }
+                    }
                 }
             }
         }
@@ -1334,6 +1406,18 @@
                 getRejectOutNumber();
 
                 @this.rejectOutSelectedList = rejectOutSelectedListArr;
+                @this.rejectOutStatus = selectedStatus;
+
+                let tujuanRejected = document.getElementById('tujuan-rejected-container');
+                let tujuanReworked = document.getElementById('tujuan-reworked-container');
+
+                if (selectedStatus == 'reworked') {
+                    tujuanReworked.classList.remove("d-none");
+                    tujuanRejected.classList.add("d-none");
+                } else if (selectedStatus == 'rejected') {
+                    tujuanRejected.classList.remove("d-none");
+                    tujuanReworked.classList.add("d-none");
+                }
 
                 $("#send-reject-modal").modal("show");
             } else {
@@ -1344,9 +1428,21 @@
             }
         }
 
+        function setRejectOutTujuan (element) {
+            if (element.value) {
+                @this.setRejectOutTujuan(element.value);
+            }
+        }
+
+        function setRejectOutLine (element) {
+            if (element.value) {
+                @this.setRejectOutLine(element.value);
+            }
+        }
+
         function sendRejectOut() {
             Swal.fire({
-                title: "Kirim Reject ke "+($("#reject-out-tujuan option:selected").text())+" ?",
+                title: "Kirim Reject ke "+(selectedStatus == "reworked" ? $("#reject-out-line option:selected").text() : $("#reject-out-tujuan option:selected").text())+" ?",
                 showCancelButton: true,
                 confirmButtonText: "Kirim",
                 confirmButtonColor: "#238380",
@@ -1358,10 +1454,8 @@
         }
 
         Livewire.on('refreshRejectOutNumber', function() {
-            rejectOutSelectedListArr = [];
             getRejectOutNumber();
             rejectOutReload();
-            $("#send-reject-modal").modal("hide");
         })
 
         // Show Reject Out Detail
@@ -1371,7 +1465,7 @@
             $("#reject-out-tanggal-sent").val(e.tanggal);
             $("#reject-out-id-sent").val(e.id);
             $("#reject-out-no-transaksi-sent").val(e.no_transaksi);
-            $("#reject-out-tujuan-sent").val(e.tujuan.toUpperCase());
+            $("#reject-out-tujuan-sent").val(e.tujuan ? e.tujuan.toUpperCase() : '-');
             $("#act-costing-id-sent").val(e.act_costing_id);
             $("#act-costing-ws-sent").val(e.kpno);
             $("#style-sent").val(e.styleno);
@@ -1456,7 +1550,7 @@
                 {
                     targets: [2],
                     render: (data, type, row, meta) => {
-                        return data.toUpperCase();
+                        return data ? data.toUpperCase() : '-';
                     }
                 },
                 {

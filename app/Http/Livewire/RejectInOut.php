@@ -56,6 +56,8 @@ class RejectInOut extends Component
     public $rejectOutTanggal;
     public $rejectOutNoTransaksi;
     public $rejectOutTujuan;
+    public $rejectOutLine;
+    public $rejectOutStatus;
 
     // Reject IN OUT
     public $rejectInOutShowPage;
@@ -116,6 +118,8 @@ class RejectInOut extends Component
         $this->rejectOutTanggal = date("Y-m-d");
         $this->rejectOutNoTransaksi = null;
         $this->rejectOutTujuan = "gudang";
+        $this->rejectOutLine = "";
+        $this->rejectOutStatus = "";
 
         // Reject QR
         $this->scannedRejectIn = null;
@@ -822,17 +826,14 @@ class RejectInOut extends Component
                                         break;
                                     case "reworked" :
                                         // Undo Reject
-                                        $currentReject = Reject::where("id", $scannedReject->id)->first();
-                                        if ($currentReject) {
-                                            if ($currentReject->defect_id > 0) {
-                                                Defect::where("id", $currentReject->defect_id)->update(["defect_status" => "defect"]);
-                                            }
+                                        // $currentReject = Reject::where("id", $scannedReject->id)->first();
+                                        // if ($currentReject) {
+                                        //     if ($currentReject->defect_id > 0) {
+                                        //         Defect::where("id", $currentReject->defect_id)->update(["defect_status" => "defect"]);
+                                        //     }
 
-                                            $currentReject->delete();
-                                        }
-
-                                        // Update Reject In
-                                        $createRejectIn->update(["process" => "sent"]);
+                                        //     $currentReject->delete();
+                                        // }
 
                                         break;
                                     default :
@@ -922,14 +923,23 @@ class RejectInOut extends Component
         );
     }
 
+    public function setRejectOutTujuan($val)
+    {
+        $this->rejectOutTujuan = $val;
+    }
+
+    public function setRejectOutLine($val)
+    {
+        $this->rejectOutLine = $val;
+    }
+
     public function sendRejectOut() {
         if ($this->rejectOutSelectedList && count($this->rejectOutSelectedList) > 0) {
-
             // Create Reject Out Parent
             $rejectOut = RejectOut::create([
                 "tanggal" => $this->rejectOutTanggal,
                 "no_transaksi" => $this->rejectOutNoTransaksi,
-                "tujuan" => $this->rejectOutTujuan,
+                "tujuan" => ($this->rejectOutStatus == 'reworked' ? $this->rejectOutLine : $this->rejectOutTujuan),
                 "created_by" => Auth::user()->line_id,
                 "created_by_username" => Auth::user()->username
             ]);
@@ -963,10 +973,12 @@ class RejectInOut extends Component
                     $this->rejectOutTanggal = date("Y-m-d");
                     $this->rejectOutNoTransaksi = null;
                     $this->rejectOutTujuan = "gudang";
-
-                    $this->emit('refreshRejectOutNumber');
+                    $this->rejectOutLine = null;
+                    $this->rejectOutStatus = null;
 
                     $this->emit('alert', 'success', count($rejectInIds)." reject berhasil di kirim.");
+
+                    $this->emit('refreshRejectOutNumber');
                 } else {
                     $this->emit('alert', 'error', "Terjadi kesalahan.");
                 }

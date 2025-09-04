@@ -124,7 +124,6 @@ class RejectInOutController extends Controller
             leftJoin("so", "so.id", "=", "so_det.id_so")->
             leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
             where("output_reject_in.process", $request->process)->
-            where("output_reject_in.status", "!=", "reworked")->
             whereRaw($rangeFilter)->
             whereRaw("output_reject_out_detail.updated_at > (NOW() - INTERVAL 6 MONTH)")->
             groupBy("output_reject_out.id", "act_costing.id", "so_det.color", "so_det.size")->
@@ -159,7 +158,6 @@ class RejectInOutController extends Controller
             leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_reject_in_detail.reject_area_id")->
             leftJoin("output_reject_in_detail_position", "output_reject_in_detail_position.reject_in_detail_id", "=", "output_reject_in_detail.id")->
             where("output_reject_in.process", $request->process)->
-            where("output_reject_in.status", "!=", "reworked")->
             whereRaw("output_reject_in.updated_at > (NOW() - INTERVAL 6 MONTH)")->
             groupBy("output_reject_in.id")->
             get();
@@ -218,7 +216,6 @@ class RejectInOutController extends Controller
             leftJoin("so", "so.id", "=", "so_det.id_so")->
             leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
             where("output_reject_in.process", "sent")->
-            where("output_reject_in.status", "!=", "reworked")->
             whereRaw($rangeFilter)->
             whereRaw($additionalFilter)->
             whereRaw("output_reject_out_detail.updated_at > (NOW() - INTERVAL 6 MONTH)")->
@@ -255,7 +252,6 @@ class RejectInOutController extends Controller
         leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_reject_in_detail.reject_area_id")->
         leftJoin("output_reject_in_detail_position", "output_reject_in_detail_position.reject_in_detail_id", "=", "output_reject_in_detail.id")->
         where("output_reject_in.process", "sent")->
-        where("output_reject_in.status", "!=", "reworked")->
         where("output_reject_out.id", $request->reject_out_id)->
         where("act_costing.id", $request->act_costing_id)->
         where("so_det.color", $request->color)->
