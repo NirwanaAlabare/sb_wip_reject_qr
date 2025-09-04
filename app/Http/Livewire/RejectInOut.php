@@ -769,7 +769,7 @@ class RejectInOut extends Component
                     if ($this->rejectInQuality) {
 
                         // Validate Reject In Grade
-                        if ($this->rejectInGrade) {
+                        if ($this->rejectInGrade || $this->rejectInQuality == 'reworked') {
 
                             // Validate Reject In Quality
                             if ($this->validateRejectInQuality()) {
