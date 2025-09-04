@@ -366,7 +366,7 @@
 
     {{-- Reject In Modal --}}
     <div class="modal" data-bs-backdrop="static" tabindex="-1" id="reject-modal" wire:ignore.self>
-        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-reject text-light">
                     <h5 class="modal-title">REJECT</h5>
@@ -507,7 +507,7 @@
                 <div class="modal-footer justify-content-between gap-1">
                     <div class="d-flex justify-content-end align-items-center">
                         <label class="form-label mb-0">Grade: </label>
-                        <input type="text" class="form-control form-control-sm" id="reject-grade" wire:model.lazy="rejectInGrade">
+                        <input type="text" class="form-control form-control-sm" id="reject-grade" wire:model="rejectInGrade">
                     </div>
                     <div class="d-flex justify-content-end gap-1">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
@@ -522,7 +522,7 @@
 
     {{-- Reject Out Modal --}}
     <div class="modal" data-bs-backdrop="static" tabindex="-1" id="send-reject-modal" wire:ignore.self>
-        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-sb-secondary text-light">
                     <h5 class="modal-title">SEND</h5>
@@ -619,7 +619,7 @@
 
     {{-- Reject Out Detail Modal --}}
     <div class="modal" data-bs-backdrop="static" tabindex="-1" id="sent-reject-modal" wire:ignore>
-        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-sb-secondary text-light">
                     <h5 class="modal-title">SENT</h5>
