@@ -1671,7 +1671,7 @@
                     var blob = new Blob([res]);
                     var link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
-                    link.download = "Reject WIP.xlsx";
+                    link.download = "Reject WIP "+formatDateTime(Date.now())+".xlsx";
                     link.click();
                 }, error: function (jqXHR) {
                     elm.removeAttribute('disabled');
@@ -1743,7 +1743,7 @@
                     var blob = new Blob([res]);
                     var link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
-                    link.download = "Defect In Out {{ Auth::user()->Groupp }} "+$("#dateFrom").val()+" - "+$("#dateTo").val()+".xlsx";
+                    link.download = "Reject Sent "+$("#date-from-sent").val()+" - "+$("#date-to-sent").val()+".xlsx";
                     link.click();
                 }, error: function (jqXHR) {
                     elm.removeAttribute('disabled');
@@ -2005,7 +2005,7 @@
                     var blob = new Blob([res]);
                     var link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
-                    link.download = "Defect In Out {{ Auth::user()->Groupp }} "+$("#dateFrom").val()+" - "+$("#dateTo").val()+".xlsx";
+                    link.download = "Reject In Out "+$("#dateFrom").val()+" - "+$("#dateTo").val()+".xlsx";
                     link.click();
                 }, error: function (jqXHR) {
                     elm.removeAttribute('disabled');
