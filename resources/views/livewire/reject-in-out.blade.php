@@ -181,6 +181,9 @@
                             {{-- WIP --}}
                             <div id="reject-out-table-wip-container" wire:ignore>
                                 <div class="table-responsive">
+                                    <div class="d-flex justify-content-end mb-3">
+                                        <button class="btn btn-success btn-sm" onclick="rejectWipExport(this)"><i class="fa fa-file-excel"></i> Export</button>
+                                    </div>
                                     <table class="table table-sm table-bordered  w-100" id="reject-out-table-wip">
                                         <thead>
                                             <tr>
@@ -1041,6 +1044,7 @@
         // REJECT OUT
 
         // Reject Out Wip Filter
+        let rejectOutWipFilter = ["id_wip_filter", "kode_numbering_wip_filter", "waktu_wip_filter", "department_wip_filter", "line_wip_filter", "ws_wip_filter", "style_wip_filter", "size_wip_filter", "quality_check_wip_filter", "grade_wip_filter", "defect_type_check_wip_filter", "defect_area_check_wip_filter"];
         $('#reject-out-table-wip thead tr').clone(true).appendTo('#reject-out-table-wip thead');
         $('#reject-out-table-wip thead tr:eq(1) th').each(function(i) {
             if (i != 0 && i != 13) {
@@ -1617,6 +1621,80 @@
 
         function rejectOutDetailReload() {
             $("#garment-list-sent").DataTable().ajax.reload();
+        }
+
+        // Reject Wip Export
+        function rejectWipExport(elm) {
+            elm.setAttribute('disabled', 'true');
+            elm.innerText = "";
+            let loading = document.createElement('div');
+            loading.classList.add('loading-small');
+            elm.appendChild(loading);
+
+            iziToast.info({
+                title: 'Exporting...',
+                message: 'Data sedang di export. Mohon tunggu...',
+                position: 'topCenter'
+            });
+
+            $.ajax({
+                url: "{{ route("export-reject-wip") }}",
+                type: 'post',
+                data: {
+                    kode_numbering: $("#kode_numbering_wip_filter").val(),
+                    waktu: $("#waktu_wip_filter").val(),
+                    department: $("#department_wip_filter").val(),
+                    line: $("#line_wip_filter").val(),
+                    ws: $("#ws_wip_filter").val(),
+                    style: $("#style_wip_filter").val(),
+                    size: $("#size_wip_filter").val(),
+                    quality_check: $("#quality_check_wip_filter").val(),
+                    grade: $("#grade_wip_filter").val(),
+                    defect_type_check: $("#defect_type_check_wip_filter").val(),
+                    defect_area_check: $("#defect_area_check_wip_filter").val(),
+                },
+                xhrFields: { responseType : 'blob' },
+                success: function(res) {
+                    elm.removeAttribute('disabled');
+                    elm.innerText = "Export ";
+                    let icon = document.createElement('i');
+                    icon.classList.add('fa-solid');
+                    icon.classList.add('fa-file-excel');
+                    elm.appendChild(icon);
+
+                    iziToast.success({
+                        title: 'Success',
+                        message: 'Data berhasil di export.',
+                        position: 'topCenter'
+                    });
+
+                    var blob = new Blob([res]);
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "Reject WIP.xlsx";
+                    link.click();
+                }, error: function (jqXHR) {
+                    elm.removeAttribute('disabled');
+                    elm.innerText = "Export ";
+                    let icon = document.createElement('i');
+                    icon.classList.add('fa-solid');
+                    icon.classList.add('fa-file-excel');
+                    elm.appendChild(icon);
+
+                    let res = jqXHR.responseJSON;
+                    let message = '';
+
+                    for (let key in res.errors) {
+                        message += res.errors[key]+' ';
+                        document.getElementById(key).classList.add('is-invalid');
+                    };
+                    iziToast.error({
+                        title: 'Error',
+                        message: message,
+                        position: 'topCenter'
+                    });
+                }
+            });
         }
 
         // Reject Out Detail Export

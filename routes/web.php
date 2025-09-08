@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/get-reject-in-out-detail', 'getRejectInOutDetail')->name("get-reject-in-out-detail");
         Route::get('/get-reject-in-out-detail-total', 'getRejectInOutDetailTotal')->name("get-reject-in-out-detail-total");
 
+        Route::post('/export-reject-wip', 'exportRejectWip')->name("export-reject-wip");
         Route::post('/export-reject-out-detail', 'exportRejectOutDetail')->name("export-reject-out-detail");
         Route::post('/export-reject-in-out', 'exportRejectInOut')->name("export-reject-in-out");
     });

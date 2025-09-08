@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Carbon\Carbon;
 use DB;
 
 class RejectOutDetailExport implements FromView, ShouldAutoSize
@@ -113,6 +114,7 @@ class RejectOutDetailExport implements FromView, ShouldAutoSize
         get();
 
         return view('exports.reject-out-detail', [
+            'waktu' => Carbon::now()->format('d-m-Y H:i:s'),
             'tanggal_awal' => $this->tanggal_awal,
             'tanggal_akhir' => $this->tanggal_akhir,
             'tanggal' => $this->tanggal,
