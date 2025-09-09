@@ -40,7 +40,7 @@
             <td style="border: 1px solid black;">{{ $reject->styleno }}</td>
             <td style="border: 1px solid black;">{{ $reject->color }}</td>
             <td style="border: 1px solid black;">{{ $reject->size }}</td>
-            <td style="border: 1px solid black;">{{ $reject->status }}</td>
+            <td style="border: 1px solid black;">{{ ($reject->status == 'reworked' ? 'GOOD' : 'REJECT') }}</td>
             <td style="border: 1px solid black;">{{ $reject->grade }}</td>
             <td style="border: 1px solid black;">{{ $reject->defect_types }}</td>
             <td style="border: 1px solid black;">{{ $reject->defect_areas }}</td>
