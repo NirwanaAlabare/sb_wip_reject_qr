@@ -1103,7 +1103,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInPackingQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
+                $rejectInPackingQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInPackingQuery->where("master_plan.sewing_line", $this->rejectInLine);
@@ -1162,7 +1162,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInQcfQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
+                $rejectInQcfQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInQcfQuery->where("master_plan.sewing_line", $this->rejectInLine);
@@ -1220,7 +1220,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInQcQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
+                $rejectInQcQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInQcQuery->where("master_plan.sewing_line", $this->rejectInLine);
@@ -1306,7 +1306,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
+                $rejectInQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInQuery->where("master_plan.sewing_line", $this->rejectInLine);
@@ -1467,7 +1467,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
+                $rejectInQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInQuery->where("master_plan.sewing_line", $this->rejectInLine);
