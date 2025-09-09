@@ -852,15 +852,18 @@ class RejectInOut extends Component
                                         if ($scannedReject->output_type == "qc" || $scannedReject->output_type == "packing") {
                                             $rejectTable = "";
                                             $defectTable = "";
+                                            $undoTable = "";
                                             switch ($scannedReject->output_type) {
                                                 case 'qc' :
                                                     $rejectTable = "output_rejects";
                                                     $defectTable = "output_defects";
+                                                    $undoTable = "output_undo";
 
                                                     break;
                                                 case 'packing' :
                                                     $rejectTable = "output_rejects_packing";
                                                     $defectTable = "output_defects_packing";
+                                                    $undoTable = "output_undo_packing";
 
                                                     break;
                                             }
@@ -872,6 +875,26 @@ class RejectInOut extends Component
                                                 }
 
                                                 $deleteReject = DB::table($rejectTable)->where("id", $currentReject->id)->delete();
+
+                                                // Log Undo
+                                                if ($deleteReject) {
+                                                    DB::table($undoTable)->insert([
+                                                        'master_plan_id' => $currentReject->master_plan_id,
+                                                        'so_det_id' => $currentReject->so_det_id,
+                                                        'output_defect_id' => $currentReject->defect_id,
+                                                        'output_reject_id' => $currentReject->id,
+                                                        'kode_numbering' => $currentReject->kode_numbering,
+                                                        'keterangan' => 'reject',
+                                                        'defect_type_id' => $currentReject->reject_type_id,
+                                                        'defect_area_id' => $currentReject->reject_area_id,
+                                                        'defect_area_x' => $currentReject->reject_area_x,
+                                                        'defect_area_y' => $currentReject->reject_area_y,
+                                                        'created_by' => $currentReject->created_by,
+                                                        'undo_by' => Auth::user()->line_id,
+                                                        'created_at' => Carbon::now(),
+                                                        'updated_at' => Carbon::now()
+                                                    ]);
+                                                }
                                             }
                                         }
 
@@ -1080,7 +1103,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInPackingQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
+                $rejectInPackingQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInPackingQuery->where("master_plan.sewing_line", $this->rejectInLine);
@@ -1139,7 +1162,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInQcfQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
+                $rejectInQcfQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInQcfQuery->where("master_plan.sewing_line", $this->rejectInLine);
@@ -1197,7 +1220,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInQcQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
+                $rejectInQcQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInQcQuery->where("master_plan.sewing_line", $this->rejectInLine);
@@ -1283,7 +1306,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
+                $rejectInQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInQuery->where("master_plan.sewing_line", $this->rejectInLine);
@@ -1444,7 +1467,7 @@ class RejectInOut extends Component
                 )");
             }
             if ($this->rejectInDate) {
-                $rejectInQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -30 days")) );
+                $rejectInQuery->where("master_plan.tgl_plan", ">=", date("Y-m-d", strtotime(date("Y-m-d")." -360 days")) );
             }
             if ($this->rejectInLine) {
                 $rejectInQuery->where("master_plan.sewing_line", $this->rejectInLine);
