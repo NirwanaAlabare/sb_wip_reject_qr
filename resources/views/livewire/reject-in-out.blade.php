@@ -538,9 +538,9 @@
                 </div>
                 <div class="modal-footer justify-content-between gap-1">
                     <div>
-                        <div class="d-flex justify-content-end gap-1 align-items-center {{ $defectInQuality && $rejectInQuality == "rejected" ? "" : "d-none" }}">
+                        <div class="d-flex justify-content-end gap-1 align-items-center {{ $rejectInQuality && $rejectInQuality == "rejected" ? "" : "d-none" }}">
                             <label class="form-label mb-0">Grade: </label>
-                            <select class="form-select" wire:model="rejectInGrade" {{ $defectInQuality && $rejectInQuality == "rejected" ? "" : "disabled" }}>
+                            <select class="form-select" wire:model="rejectInGrade" {{ $rejectInQuality && $rejectInQuality == "rejected" ? "" : "disabled" }}>
                                 <option value=""></option>
                                 <option value="B">B</option>
                                 <option value="C">C</option>
