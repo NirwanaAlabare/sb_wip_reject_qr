@@ -141,7 +141,7 @@ class RejectInOutController extends Controller
                 act_costing.styleno,
                 so_det.color,
                 so_det.size,
-                output_reject_in.status,
+                CASE WHEN output_reject_in.status = 'reworked' THEN 'GOOD' ELSE 'REJECT' END as status,
                 output_reject_in.grade,
                 GROUP_CONCAT(output_defect_types.defect_type SEPARATOR ' , ') defect_types,
                 GROUP_CONCAT(output_defect_areas.defect_area SEPARATOR ' , ') defect_areas,
@@ -236,7 +236,7 @@ class RejectInOutController extends Controller
             act_costing.styleno,
             so_det.color,
             so_det.size,
-            output_reject_in.status,
+            CASE WHEN output_reject_in.status = 'reworked' THEN 'GOOD' ELSE 'REJECT' END as status,
             output_reject_in.grade,
             GROUP_CONCAT(output_defect_types.defect_type SEPARATOR ' , ') defect_types,
             GROUP_CONCAT(output_defect_areas.defect_area SEPARATOR ' , ') defect_areas
@@ -310,7 +310,7 @@ class RejectInOutController extends Controller
                 master_plan.gambar gambar,
                 output_reject_in.reject_area_x reject_area_x,
                 output_reject_in.reject_area_y reject_area_y,
-                output_reject_in.status,
+                CASE WHEN output_reject_in.status = 'reworked' THEN 'GOOD' ELSE 'REJECT' END as status,
                 output_reject_in.grade,
                 GROUP_CONCAT(output_defect_types_reject.defect_type SEPARATOR ' , ') defect_types_check,
                 GROUP_CONCAT(output_defect_areas_reject.defect_area SEPARATOR ' , ') defect_areas_check,
@@ -363,7 +363,7 @@ class RejectInOutController extends Controller
                 master_plan.gambar gambar,
                 output_rejects.reject_area_x reject_area_x,
                 output_rejects.reject_area_y reject_area_y,
-                output_reject_in.status,
+                CASE WHEN output_reject_in.status = 'reworked' THEN 'GOOD' ELSE 'REJECT' END as status,
                 output_reject_in.grade,
                 GROUP_CONCAT(output_defect_types_reject.defect_type SEPARATOR ' , ') defect_types_check,
                 GROUP_CONCAT(output_defect_areas_reject.defect_area SEPARATOR ' , ') defect_areas_check,
@@ -397,7 +397,7 @@ class RejectInOutController extends Controller
             groupBy("output_reject_in.id")->
             get();
 
-        return array("defectIn" => $rejectInOutQuery->count(), "totalReject" => $rejectInOutQuery->where("status", "rejected")->count(), "totalGood" => $rejectInOutQuery->where("status", "reworked")->count());
+        return array("defectIn" => $rejectInOutQuery->count(), "totalReject" => $rejectInOutQuery->where("status", "REJECT")->count(), "totalGood" => $rejectInOutQuery->where("status", "GOOD")->count());
     }
 
     public function exportRejectWip(Request $request) {

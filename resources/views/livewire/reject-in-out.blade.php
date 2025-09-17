@@ -184,7 +184,7 @@
                                     <div class="d-flex justify-content-end mb-3">
                                         <button class="btn btn-success btn-sm" onclick="rejectWipExport(this)"><i class="fa fa-file-excel"></i> Export</button>
                                     </div>
-                                    <table class="table table-sm table-bordered  w-100" id="reject-out-table-wip">
+                                    <table class="table table-sm table-bordered w-100" id="reject-out-table-wip">
                                         <thead>
                                             <tr>
                                                 <th>Action</th>
@@ -1081,7 +1081,10 @@
             serverSide: true,
             processing: true,
             ordering: false,
-            pageLength: 50,
+            scrollY: '300px',
+            scrollX: '300px',
+            scrollCollapse: true,
+            paging: false,
             ajax: {
                 url: '{{ route('get-reject-out') }}',
                 dataType: 'json',
@@ -1178,13 +1181,13 @@
                     render: (data, type, row, meta) => {
                         let textColor = '';
 
-                        if (data == "rejected") {
+                        if (data == "REJECT") {
                             textColor = "text-reject";
                         } else {
                             textColor = "text-success";
                         }
 
-                        return `<span class="`+textColor+` fw-bold">`+(data == "reworked" ? "GOOD" : 'REJECT')+`</span>`;
+                        return `<span class="`+textColor+` fw-bold">`+(data == "GOOD" ? "GOOD" : 'REJECT')+`</span>`;
                     }
                 },
                 {
@@ -1250,7 +1253,10 @@
             serverSide: true,
             processing: true,
             ordering: false,
-            pageLength: 50,
+            scrollY: '300px',
+            scrollX: '300px',
+            scrollCollapse: true,
+            paging: false,
             ajax: {
                 url: '{{ route('get-reject-out') }}',
                 dataType: 'json',
@@ -1388,6 +1394,8 @@
                 $("#btn-sent").removeClass("text-light");
                 $("#btn-sent").addClass("text-primary");
             }
+
+            outTableColumnAdjust();
         }
 
         var rejectOutSelectedListArr = [];
@@ -1597,13 +1605,13 @@
                     render: (data, type, row, meta) => {
                         let textColor = '';
 
-                        if (data == "reworked") {
+                        if (data == "GOOD") {
                             textColor = "text-primary";
                         } else {
                             textColor = "text-danger";
                         }
 
-                        return `<span class="`+textColor+` fw-bold">`+(data ? (data == "reworked" ? "GOOD" : "REJECT") : '-')+`</span>`;
+                        return `<span class="`+textColor+` fw-bold">`+(data ? (data == "GOOD" ? "GOOD" : "REJECT") : '-')+`</span>`;
                     }
                 },
                 {
@@ -1905,13 +1913,13 @@
                     render: (data, type, row, meta) => {
                         let textColor = '';
 
-                        if (data == "reworked") {
+                        if (data == "GOOD") {
                             textColor = "text-success";
                         } else {
                             textColor = "text-danger";
                         }
 
-                        return `<span class="`+textColor+` fw-bold">`+(data == "reworked" ? 'GOOD' : 'REJECT')+`</span>`;
+                        return `<span class="`+textColor+` fw-bold">`+(data == "GOOD" ? 'GOOD' : 'REJECT')+`</span>`;
                     }
                 },
                 {
@@ -2031,5 +2039,14 @@
                 }
             });
         }
+
+        function outTableColumnAdjust() {
+            $("#reject-out-table-wip").DataTable().columns.adjust()
+            $("#reject-out-table-sent").DataTable().columns.adjust()
+        }
+
+        Livewire.on("outTableColumnAdjust", () => {
+            outTableColumnAdjust();
+        })
     </script>
 @endpush

@@ -165,6 +165,7 @@ class RejectInOut extends Component
         $this->mode = $mode;
 
         $this->emit('qrInputFocus', $mode);
+        $this->emit('outTableColumnAdjust');
     }
 
     // REJECT IN
