@@ -181,7 +181,12 @@
                             {{-- WIP --}}
                             <div id="reject-out-table-wip-container" wire:ignore>
                                 <div class="table-responsive">
-                                    <div class="d-flex justify-content-end mb-3">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <div class="d-flex align-items-end gap-3">
+                                            <button class="btn btn-dark btn-sm" onclick="clearRejectOutSelectedList()"><i class="fa fa-rotate"></i></button>
+                                            <p class="mb-0">Selected : <span id="total-selected-wip">0</span></p>
+                                            <span class="badge text-bg-primary" id="current-selected-type"></span>
+                                        </div>
                                         <button class="btn btn-success btn-sm" onclick="rejectWipExport(this)"><i class="fa fa-file-excel"></i> Export</button>
                                     </div>
                                     <table class="table table-sm table-bordered w-100" id="reject-out-table-wip">
@@ -1121,7 +1126,7 @@
                     data: "size"
                 },
                 {
-                    data: "status"
+                    data: "status_name"
                 },
                 {
                     data: "grade"
@@ -1141,9 +1146,11 @@
                     targets: [0],
                     className: "text-center text-nowrap align-middle",
                     render: (data, type, row, meta) => {
+                        let selected = rejectOutSelectedListArr.some((item) => item.id == row.id);
+
                         return `
                             <div class="form-check" style="scale: 1.5;translate: 50%;">
-                                <input class="form-check-input check-stock-number" type="checkbox" data-status="`+row.status+`" onchange="checkRejectOut(this)" id="stock_number_`+meta.row+`">
+                                <input class="form-check-input check-stock-number" type="checkbox" data-status="`+row.status+`" onchange="checkRejectOut(this)" id="stock_number_`+meta.row+`" `+(selected ? 'checked' : '')+` `+(selectedStatus && selectedStatus != row.status ? 'disabled' : '')+`>
                             </div>
                         `;
                     }
@@ -1421,7 +1428,9 @@
                 } else {
                     rejectOutSelectedListArr = rejectOutSelectedListArr.filter((item) => item.kode_numbering != data.kode_numbering);
 
-                    selectedStatus = '';
+                    if (rejectOutSelectedListArr.length < 1) {
+                        selectedStatus = '';
+                    }
 
                     if (rejectOutSelectedListArr < 1) {
                         for (let i = 0; i < stockNumberCheck.length; i++) {
@@ -1430,6 +1439,34 @@
                     }
                 }
             }
+
+            document.getElementById('total-selected-wip').innerText = rejectOutSelectedListArr.length;
+            let currentTypeStyle = '';
+            if (selectedStatus) {
+                if (selectedStatus == 'reworked') {
+                    currentTypeStyle = 'text-bg-success';
+                } else {
+                    currentTypeStyle = 'text-bg-danger'
+                }
+            }
+            document.getElementById('current-selected-type').innerText = selectedStatus ? (selectedStatus == 'reworked' ? 'GOOD' : 'REJECT') : '';
+            document.getElementById('current-selected-type').classList.remove("text-bg-primary");
+            document.getElementById('current-selected-type').classList.remove("text-bg-danger");
+            document.getElementById('current-selected-type').classList.add(currentTypeStyle);
+        }
+
+        function clearRejectOutSelectedList() {
+            selectedStatus = "";
+            rejectOutSelectedListArr = [];
+
+            let stockNumberCheck =  document.getElementsByClassName('check-stock-number');
+            for (let i = 0; i < stockNumberCheck.length; i++) {
+                stockNumberCheck[i].checked = false;
+                stockNumberCheck[i].removeAttribute("disabled");
+            }
+
+            document.getElementById('total-selected-wip').innerText = rejectOutSelectedListArr.length;
+            document.getElementById('current-selected-type').innerText = "";
         }
 
         function getRejectOutNumber() {
@@ -1581,7 +1618,7 @@
                     data: 'size',
                 },
                 {
-                    data: 'status',
+                    data: 'status_name',
                 },
                 {
                     data: 'grade',
@@ -1872,7 +1909,7 @@
                     data: 'defect_type',
                 },
                 {
-                    data: 'status',
+                    data: 'status_name',
                 },
                 {
                     data: 'grade',
