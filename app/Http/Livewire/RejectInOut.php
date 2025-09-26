@@ -17,6 +17,7 @@ use App\Models\SignalBit\RejectInDetail;
 use App\Models\SignalBit\RejectInDetailPosition;
 use App\Models\SignalBit\RejectOut;
 use App\Models\SignalBit\RejectOutDetail;
+use App\Models\SignalBit\OutputGudangStok;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -1028,11 +1029,34 @@ class RejectInOut extends Component
                     $createRejectOutDetail = RejectOutDetail::insert($rejectOutDetailArr);
 
                     if ($createRejectOutDetail) {
-                        // Update Reject In Process
-                        $rejectInIds = DB::table("output_reject_out_detail")->where("batch", $rejectOutBatch)->pluck("reject_in_id")->toArray();
+                        // Current Reject Out
+                        $currentRejectOutDetail = RejectOutDetail::where("batch", $rejectOutBatch)->get();
+
+                        // Update Reject In
+                        $rejectInIds = $currentRejectOutDetail->pluck("reject_in_id")->toArray();
                         RejectIn::whereIn("id", $rejectInIds)->update([
                             "process" => "sent"
                         ]);
+
+                        // Create Reject Out Gudang When it rejected
+                        if ($this->rejectOutStatus != 'reworked') {
+                            $rejectOutGudang = [];
+                            foreach ($currentRejectOutDetail as $rejectOutDetail) {
+                                array_push(
+                                    $rejectOutGudang,[
+                                    "kode_numbering" => $rejectOutDetail->rejectIn->kode_numbering,
+                                    "so_det_id" => $rejectOutDetail->rejectIn->so_det_id,
+                                    "reject_out_id" => $rejectOutDetail->id,
+                                    "created_by" => Auth::user()->id,
+                                    "created_by_username" => Auth::user()->username,
+                                    "created_by_line" => Auth::user()->line_id,
+                                    "created_at" => Carbon::now(),
+                                    "updated_at" => Carbon::now(),
+                                ]);
+                            }
+
+                            OutputGudangStok::insert($rejectOutGudang);
+                        }
 
                         $this->rejectOutSelectedList = [];
                         $this->rejectOutTanggal = date("Y-m-d");
