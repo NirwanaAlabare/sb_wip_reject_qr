@@ -195,7 +195,9 @@
             });
 
             rejectAreaConfirm.addEventListener('click', () => {
-                Livewire.emit('setRejectAreaPosition', rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
+                // Livewire.emit('setRejectAreaPosition', rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
+
+                setRejectAreaPosition(rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
 
                 hideSelectRejectArea();
             });
@@ -208,7 +210,9 @@
                 rejectAreaPositionX.value = null;
                 rejectAreaPositionY.value = null;
 
-                Livewire.emit('setRejectAreaPosition', rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
+                setRejectAreaPosition(rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
+
+                // Livewire.emit('setRejectAreaPosition', rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
 
                 hideSelectRejectArea();
             });
@@ -226,7 +230,9 @@
                 rejectAreaPositionX.value = null;
                 rejectAreaPositionY.value = null;
 
-                Livewire.emit('setRejectAreaPosition', rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
+                setRejectAreaPosition(rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
+
+                // Livewire.emit('setRejectAreaPosition', rejectAreaPositionX.value, rejectAreaPositionY.value, rejectAreaIndex.value);
             });
         }
 

@@ -473,79 +473,125 @@
                                     <input type="text" class="form-control" wire:model="rejectInAreaModal" readonly>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4" wire:ignore>
                                 <div class="mb-3">
                                     <label class="form-label">Quality Check</label>
-                                    <select class="form-select" wire:model="rejectInQuality" id="reject-quality">
-                                        <option value="">Pilih Quality</option>
+                                    <select class="form-select" id="reject-quality" onchange="qualityChange()">
+                                        <option value="" selected>Pilih Quality</option>
                                         <option value="reworked">GOOD</option>
                                         <option value="rejected">REJECT</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
+                        <input type="hidden" id="product-image" wire:model="productImage" class="d-none" readonly>
                         <hr class="border-1 mb-3">
-                        <div class="{{ $rejectInQuality && $rejectInQuality == "rejected" ? "" : "d-none" }}">
-                            @if ($rejectDetails && count($rejectDetails) > 0)
-                                @for ($i = 0; $i < count($rejectDetails); $i++)
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-1">
-                                                <div class="d-flex align-items-center mb-1">
-                                                    <label class="form-label me-1 mb-0">Reject Type</label>
-                                                </div>
-                                                <div wire:ignore id="select-reject-type-container">
-                                                    <select class="form-select reject-modal-select2" id="reject-type-select2-{{ $i }}" data-index="{{ $i }}" onchange="selectRejectType(this)">
-                                                        <option value="" selected>Select reject type</option>
-                                                        @foreach ($defectTypes as $defect)
+                        <div wire:ignore>
+                            {{-- Template --}}
+                            <div class="d-none" id="multi-reject-template">
+                                <div class="row multi-reject-item">
+                                    <div class="col-md-6">
+                                        <div class="mb-1">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <label class="form-label me-1 mb-0">Reject Type</label>
+                                            </div>
+                                            <div wire:ignore id="select-reject-type-container">
+                                                <select class="form-select reject-modal-select2" id="reject-type-select2-0" data-index="0" onchange="selectRejectType(this)">
+                                                    <option value="" selected>Select reject type</option>
+                                                    @foreach ($defectTypes as $defect)
+                                                        <option value="{{ $defect->id }}">
+                                                            {{ $defect->defect_type }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-1">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <label class="form-label me-1 mb-0">Reject Area</label>
+                                            </div>
+                                            <div class="d-flex gap-1">
+                                                <div class="w-75" wire:ignore id="select-reject-area-container">
+                                                    <select class="form-select reject-modal-select2" id="reject-area-select2-0" data-index="0" onchange="selectRejectArea(this)">
+                                                        <option value="" selected>Select reject area</option>
+                                                        @foreach ($defectAreas as $defect)
                                                             <option value="{{ $defect->id }}">
-                                                                {{ $defect->defect_type }}
+                                                                {{ $defect->defect_area }}
                                                             </option>
                                                         @endforeach
                                                     </select>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-1">
-                                                <div class="d-flex align-items-center mb-1">
-                                                    <label class="form-label me-1 mb-0">Reject Area</label>
-                                                </div>
-                                                <div class="d-flex gap-1">
-                                                    <div class="w-75" wire:ignore id="select-reject-area-container">
-                                                        <select class="form-select reject-modal-select2" id="reject-area-select2-{{ $i }}" data-index="{{ $i }}" onchange="selectRejectArea(this)">
-                                                            <option value="" selected>Select reject area</option>
-                                                            @foreach ($defectAreas as $defect)
-                                                                <option value="{{ $defect->id }}">
-                                                                    {{ $defect->defect_area }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    <div class="w-25">
-                                                        <button type="button" wire:click="selectRejectAreaPosition({{ $i }})" id="select-reject-area-position-{{ $i }}" class="btn btn-dark w-100">
-                                                            <i class="fa-regular fa-image"></i>
-                                                        </button>
-                                                    </div>
+                                                <div class="w-25">
+                                                    <button type="button" onclick="selectRejectAreaPosition(0)" id="select-reject-area-position-0" class="btn btn-dark w-100">
+                                                        <i class="fa-regular fa-image"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                @endfor
-                            @endif
-                            <div class="d-flex justify-content-end gap-1 mt-3">
-                                <button type="button" class="btn btn-sm btn-success" wire:click="addRejectDetail"><i class="fa fa-plus"></i></button>
-                                <button type="button" class="btn btn-sm btn-danger" wire:click="removeRejectDetail"><i class="fa fa-minus"></i></button>
-                                <button type="button" class="btn btn-sm btn-sb" wire:click="resetRejectDetails"><i class="fa fa-arrow-rotate-left"></i></button>
+                                </div>
+                            </div>
+                            {{-- Select --}}
+                            <div class="d-none" id="multi-reject-container">
+                                <div class="row multi-reject-item">
+                                    <div class="col-md-6">
+                                        <div class="mb-1">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <label class="form-label me-1 mb-0">Reject Type</label>
+                                            </div>
+                                            <div wire:ignore id="select-reject-type-container">
+                                                <select class="form-select reject-modal-select2" id="reject-type-select2-0" data-index="0" onchange="selectRejectType(this)">
+                                                    <option value="" selected>Select reject type</option>
+                                                    @foreach ($defectTypes as $defect)
+                                                        <option value="{{ $defect->id }}">
+                                                            {{ $defect->defect_type }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-1">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <label class="form-label me-1 mb-0">Reject Area</label>
+                                            </div>
+                                            <div class="d-flex gap-1">
+                                                <div class="w-75" wire:ignore id="select-reject-area-container">
+                                                    <select class="form-select reject-modal-select2" id="reject-area-select2-0" data-index="0" onchange="selectRejectArea(this)">
+                                                        <option value="" selected>Select reject area</option>
+                                                        @foreach ($defectAreas as $defect)
+                                                            <option value="{{ $defect->id }}">
+                                                                {{ $defect->defect_area }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="w-25">
+                                                    <button type="button" onclick="selectRejectAreaPosition(0)" id="select-reject-area-position-0" class="btn btn-dark w-100">
+                                                        <i class="fa-regular fa-image"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end gap-1 mt-3">
+                                    <button type="button" class="btn btn-sm btn-success" onclick="addRejectDetail()"><i class="fa fa-plus"></i></button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeRejectDetail()"><i class="fa fa-minus"></i></button>
+                                    <button type="button" class="btn btn-sm btn-sb" onclick="resetRejectDetails()"><i class="fa fa-arrow-rotate-left"></i></button>
+                                </div>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer justify-content-between gap-1">
-                    <div>
-                        <div class="d-flex justify-content-end gap-1 align-items-center {{ $rejectInQuality && $rejectInQuality == "rejected" ? "" : "d-none" }}">
+                    <div wire:ignore>
+                        <div class="d-flex justify-content-end align-items-center d-none" id="reject-in-grade-container">
                             <label class="form-label mb-0">Grade: </label>
-                            <select class="form-select" wire:model="rejectInGrade" {{ $rejectInQuality && $rejectInQuality == "rejected" ? "" : "disabled" }}>
+                            <select class="form-select" id="reject-in-grade" onchange="setRejectInGrade(this)" disabled>
                                 <option value=""></option>
                                 <option value="B">B</option>
                                 <option value="C">C</option>
@@ -555,7 +601,7 @@
                     <div class="d-flex justify-content-end gap-1">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
                         <div id="regular-submit-reject" wire:ignore.self>
-                            <button type="button" class="btn btn-success" wire:click="submitRejectIn">Selesai</button>
+                            <button type="button" class="btn btn-success" onclick="submitRejectIn()">Selesai</button>
                         </div>
                     </div>
                 </div>
@@ -752,38 +798,38 @@
 
     <script>
         // Init Reject Modal Select2
-        function initRejectSelect2() {
-            $('.reject-modal-select2').each(function () {
-                if ($(this).hasClass("select2-hidden-accessible")) {
-                    const id = $(this).attr('id');
-                    const $dropdown = $(`.select2-dropdown:has([aria-controls="select2-${id}-results"])`);
-                    const $options = $dropdown.find('.select2-results__option');
+        // function initRejectSelect2() {
+        //     $('.reject-modal-select2').each(function () {
+        //         if ($(this).hasClass("select2-hidden-accessible")) {
+        //             const id = $(this).attr('id');
+        //             const $dropdown = $(`.select2-dropdown:has([aria-controls="select2-${id}-results"])`);
+        //             const $options = $dropdown.find('.select2-results__option');
 
-                    if ($options.length === 0) {
-                        $(this).select2('destroy').select2({
-                            theme: "bootstrap-5",
-                            width: $(this).data('width')
-                                ? $(this).data('width')
-                                : $(this).hasClass('w-100')
-                                    ? '100%'
-                                    : 'style',
-                            placeholder: $(this).data('placeholder'),
-                            dropdownParent: $('#reject-modal .modal-content')
-                        });
-                    }
+        //             if ($options.length === 0) {
+        //                 $(this).select2('destroy').select2({
+        //                     theme: "bootstrap-5",
+        //                     width: $(this).data('width')
+        //                         ? $(this).data('width')
+        //                         : $(this).hasClass('w-100')
+        //                             ? '100%'
+        //                             : 'style',
+        //                     placeholder: $(this).data('placeholder'),
+        //                     dropdownParent: $('#reject-modal .modal-content')
+        //                 });
+        //             }
 
-                    return;
-                }
+        //             return;
+        //         }
 
-                // Re-init
-                $(this).select2({
-                    theme: "bootstrap-5",
-                    width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
-                    placeholder: $( this ).data( 'placeholder' ),
-                    dropdownParent: $('#reject-modal .modal-content')
-                });
-            });
-        }
+        //         // Re-init
+        //         $(this).select2({
+        //             theme: "bootstrap-5",
+        //             width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+        //             placeholder: $( this ).data( 'placeholder' ),
+        //             dropdownParent: $('#reject-modal .modal-content')
+        //         });
+        //     });
+        // }
 
         function initSendRejectSelect2() {
             $('.select2bs4rejectout').each(function () {
@@ -819,7 +865,7 @@
         }
 
         Livewire.hook('message.processed', () => {
-            initRejectSelect2();
+            // initRejectSelect2();
             initSendRejectSelect2();
         });
 
@@ -872,32 +918,189 @@
         });
 
         // REJECT IN
-        function selectRejectType(element) {
-            if (element.value) {
-                @this.setRejectType(element.value, element.getAttribute("data-index"));
+        function qualityChange() {
+            let qualityElement = document.getElementById("reject-quality");
+
+            if (qualityElement) {
+                let quality = qualityElement.value;
+                let multiRejectContainerElement = document.getElementById("multi-reject-container");
+                let gradeContainerElement = document.getElementById("reject-in-grade-container");
+                let gradeElement = document.getElementById("reject-in-grade");
+
+                @this.rejectInQuality = quality;
+
+                if (quality == 'rejected') {
+                    multiRejectContainerElement.classList.remove("d-none");
+                    gradeContainerElement.classList.remove("d-none");
+                    gradeElement.removeAttribute("disabled");
+                } else {
+                    multiRejectContainerElement.classList.add("d-none");
+                    gradeContainerElement.classList.add("d-none");
+                    gradeElement.setAttribute("disabled", true);
+                }
             }
+        }
+
+        var rejectDetails = [{
+            reject_status: null,
+            reject_type: null,
+            reject_area: null,
+            reject_area_x: 0,
+            reject_area_y: 0,
+        }];
+
+        function addRejectDetail() {
+            let index = rejectDetails.length;
+
+            // Push default object
+            rejectDetails.push({
+                reject_status: null,
+                reject_type: null,
+                reject_area: null,
+                reject_area_x: 0,
+                reject_area_y: 0,
+            });
+
+            // Clone the pure template
+            const template = document.getElementById("multi-reject-template");
+            const clone = template.querySelector(".multi-reject-item").cloneNode(true);
+
+            // Update data-index and IDs
+            clone.querySelectorAll("[data-index]").forEach(el => el.setAttribute("data-index", index));
+            clone.querySelectorAll("[id]").forEach(el => {
+                let oldId = el.id;
+                if (oldId) el.id = oldId.replace("-0", `-${index}`);
+            });
+            clone.querySelectorAll("[onclick]").forEach(el => {
+                el.setAttribute("onclick", el.getAttribute("onclick").replace("(0)", `(${index})`));
+            });
+
+            // Append before buttons
+            const container = document.getElementById("multi-reject-container");
+            container.insertBefore(clone, container.querySelector(".d-flex.justify-content-end"));
+
+            // Initialize Select2 on the new select elements
+            $(clone).find("select.reject-modal-select2").select2({
+                theme: "bootstrap-5",
+                width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+                placeholder: $( this ).data( 'placeholder' ),
+                dropdownParent: $("#reject-modal .modal-content")
+            });
+        }
+
+        function removeRejectDetail() {
+            if (rejectDetails.length > 1) {
+                // Remove last from array
+                rejectDetails.pop();
+
+                // Remove last reject item DOM
+                const container = document.getElementById("multi-reject-container");
+                const items = container.querySelectorAll(".multi-reject-item");
+                if (items.length > 1) {
+                    items[items.length - 1].remove();
+                }
+            }
+        }
+
+        function resetRejectDetails() {
+            rejectDetails = [{
+                reject_status: null,
+                reject_type: null,
+                reject_area: null,
+                reject_area_x: 0,
+                reject_area_y: 0,
+            }];
+            const container = document.getElementById("multi-reject-container");
+            const items = container.querySelectorAll(".multi-reject-item");
+            console.log(items);
+            items.forEach((item, i) => {
+                if (i > 0) item.remove(); // Keep only the first one
+            });
+
+            // Reset the first one
+            container.querySelectorAll("select").forEach(select => {
+                select.value = "";
+            });
+        }
+
+        function selectRejectType(element) {
+            let index = element.getAttribute("data-index");
+            if (element.value) {
+                rejectDetails[index].reject_type = element.value;
+            } else {
+                rejectDetails[index].reject_type = null;
+            }
+            console.log("rejectDetails:", rejectDetails);
         }
 
         function selectRejectArea(element) {
+            let index = element.getAttribute("data-index");
             if (element.value) {
-                @this.setRejectArea(element.value, element.getAttribute("data-index"));
+                rejectDetails[index].reject_area = element.value;
+            } else {
+                rejectDetails[index].reject_area = null;
+            }
+            console.log("rejectDetails:", rejectDetails);
+        }
+
+        function selectRejectAreaPosition(index) {
+            let productImageElement = document.getElementById("product-image");
+
+            if (productImageElement) {
+                let productImage = productImageElement.value;
+
+                if (productImage) {
+                    let x = 0;
+                    let y = 0;
+
+                    if (rejectDetails[index]) {
+                        x = rejectDetails[index].reject_area_x || 0;
+                        y = rejectDetails[index].reject_area_y || 0;
+                    }
+
+                    showSelectRejectArea(productImage, x, y, index);
+                }
             }
         }
 
-        Livewire.on('clearSelectRejectAreaPoint', ($i) => {
-            $('#reject-type-select2-'+$i).val("").trigger('change');
-            $('#reject-area-select2-'+$i).val("").trigger('change');
+        function setRejectAreaPosition(x, y, i) {
+            let rejectAreaPositionX = x;
+            let rejectAreaPositionY = y;
+
+            if (rejectDetails && rejectDetails.length > 0) {
+                if (rejectDetails[i]) {
+                    rejectDetails[i]["reject_area_x"] = x;
+                    rejectDetails[i]["reject_area_y"] = y;
+                }
+            }
+        }
+
+        Livewire.on('clearSelectRejectAreaPoint', (i) => {
+            $('#reject-type-select2-'+i).val("").trigger('change');
+            $('#reject-area-select2-'+i).val("").trigger('change');
         });
+
+        function setRejectInGrade(element) {
+            @this.rejectInGrade = element.value;
+        }
 
         var scannedItemRejectIn = document.getElementById("scannedItemRejectIn");
         scannedItemRejectIn.addEventListener("change", async function () {
             @this.scannedRejectIn = this.value;
 
-            // submit
+            //pre submit
             @this.preSubmitRejectIn();
 
             this.value = '';
         });
+
+        function submitRejectIn() {
+            // set reject details
+            @this.rejectDetails = rejectDetails;
+
+            // submit
+            @this.submitRejectIn();
+        }
 
         // init scan
         Livewire.on('qrInputFocus', async (mode) => {
@@ -1044,6 +1247,11 @@
             $('.reject-modal-select2').each(function () {
                 $(this).val(null).trigger("change");
             });
+
+            $("#reject-quality").val("").trigger("change");
+            $("#reject-in-grade").val("").trigger("change");
+
+            resetRejectDetails();
         });
 
 

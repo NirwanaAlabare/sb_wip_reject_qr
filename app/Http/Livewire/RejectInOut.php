@@ -31,9 +31,10 @@ class RejectInOut extends Component
     protected $paginationTheme = 'bootstrap';
 
     public $date;
-
     public $lines;
     public $orders;
+
+    public $productImage;
 
     // Reject IN
     public $scannedRejectIn;
@@ -1084,6 +1085,9 @@ class RejectInOut extends Component
 
     public function render()
     {
+        $currentPlan = MasterPlan::select('gambar')->find($this->rejectInMasterPlanOutput);
+        $this->productImage = $currentPlan ? $currentPlan->gambar : '';
+
         $this->loadingMasterPlan = false;
 
         $this->lines = UserPassword::where("Groupp", "SEWING")->orderBy("line_id", "asc")->get();
@@ -1117,8 +1121,8 @@ class RejectInOut extends Component
             })->
             whereNotNull("master_plan.id")->
             whereNotNull("output_rejects_packing.kode_numbering")->
-            whereNull("output_reject_in.id")->
-            whereRaw("output_rejects_packing.updated_at >= '2025-09-15 00:00:00'");
+            whereNull("output_reject_in.id");
+            // whereRaw("output_rejects_packing.updated_at >= '2025-09-15 00:00:00'");
             if ($this->rejectInSearch) {
                 $rejectInPackingQuery->whereRaw("(
                     master_plan.tgl_plan LIKE '%".$this->rejectInSearch."%' OR
@@ -1320,8 +1324,8 @@ class RejectInOut extends Component
             })->
             whereNotNull("master_plan.id")->
             whereNotNull("output_rejects_packing.kode_numbering")->
-            whereNull("output_reject_in.id")->
-            whereRaw("output_rejects_packing.updated_at >= '2025-09-15 00:00:00'");
+            whereNull("output_reject_in.id");
+            // whereRaw("output_rejects_packing.updated_at >= '2025-09-15 00:00:00'");
             if ($this->rejectInSearch) {
                 $rejectInQuery->whereRaw("(
                     master_plan.tgl_plan LIKE '%".$this->rejectInSearch."%' OR
