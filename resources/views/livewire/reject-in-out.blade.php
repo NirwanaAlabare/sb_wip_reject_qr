@@ -1010,16 +1010,11 @@
                 reject_area_x: 0,
                 reject_area_y: 0,
             }];
+
             const container = document.getElementById("multi-reject-container");
             const items = container.querySelectorAll(".multi-reject-item");
-            console.log(items);
             items.forEach((item, i) => {
                 if (i > 0) item.remove(); // Keep only the first one
-            });
-
-            // Reset the first one
-            container.querySelectorAll("select").forEach(select => {
-                select.value = "";
             });
         }
 
@@ -1245,7 +1240,7 @@
         // Clear Reject In Input
         Livewire.on('clearRejectModal', async function (defectAreaImage, x, y) {
             $('.reject-modal-select2').each(function () {
-                $(this).val(null).trigger("change");
+                $(this).val("").trigger("change");
             });
 
             $("#reject-quality").val("").trigger("change");

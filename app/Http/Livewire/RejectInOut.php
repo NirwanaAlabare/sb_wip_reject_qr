@@ -450,14 +450,14 @@ class RejectInOut extends Component
             ]
         );
 
-        $this->emit('reinitSelect2');
+        // $this->emit('reinitSelect2');
     }
 
     public function removeRejectDetail()
     {
         array_pop($this->rejectDetails);
 
-        $this->emit('reinitSelect2');
+        // $this->emit('reinitSelect2');
     }
 
     public function resetRejectDetails()
@@ -472,7 +472,7 @@ class RejectInOut extends Component
             ]
         ];
 
-        $this->emit('reinitSelect2');
+        // $this->emit('reinitSelect2');
     }
 
     public function selectRejectAreaPosition($i)
