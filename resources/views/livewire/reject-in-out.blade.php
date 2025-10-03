@@ -488,8 +488,8 @@
                         <hr class="border-1 mb-3">
                         <div wire:ignore>
                             {{-- Template --}}
-                            <div class="d-none" id="multi-reject-template">
-                                <div class="row multi-reject-item">
+                            <div class="d-none" id="multi-reject-template" wire:ignore>
+                                <div class="row multi-reject-item" wire:ignore>
                                     <div class="col-md-6">
                                         <div class="mb-1">
                                             <div class="d-flex align-items-center mb-1">
@@ -541,7 +541,7 @@
                                             <div class="d-flex align-items-center mb-1">
                                                 <label class="form-label me-1 mb-0">Reject Type</label>
                                             </div>
-                                            <div wire:ignore id="select-reject-type-container">
+                                            <div id="select-reject-type-container">
                                                 <select class="form-select reject-modal-select2" id="reject-type-select2-0" data-index="0" onchange="selectRejectType(this)">
                                                     <option value="" selected>Select reject type</option>
                                                     @foreach ($defectTypes as $defect)
@@ -559,7 +559,7 @@
                                                 <label class="form-label me-1 mb-0">Reject Area</label>
                                             </div>
                                             <div class="d-flex gap-1">
-                                                <div class="w-75" wire:ignore id="select-reject-area-container">
+                                                <div class="w-75" id="select-reject-area-container">
                                                     <select class="form-select reject-modal-select2" id="reject-area-select2-0" data-index="0" onchange="selectRejectArea(this)">
                                                         <option value="" selected>Select reject area</option>
                                                         @foreach ($defectAreas as $defect)
@@ -798,38 +798,38 @@
 
     <script>
         // Init Reject Modal Select2
-        // function initRejectSelect2() {
-        //     $('.reject-modal-select2').each(function () {
-        //         if ($(this).hasClass("select2-hidden-accessible")) {
-        //             const id = $(this).attr('id');
-        //             const $dropdown = $(`.select2-dropdown:has([aria-controls="select2-${id}-results"])`);
-        //             const $options = $dropdown.find('.select2-results__option');
+        function initRejectSelect2() {
+            $('.reject-modal-select2').each(function () {
+                if ($(this).hasClass("select2-hidden-accessible")) {
+                    const id = $(this).attr('id');
+                    const $dropdown = $(`.select2-dropdown:has([aria-controls="select2-${id}-results"])`);
+                    const $options = $dropdown.find('.select2-results__option');
 
-        //             if ($options.length === 0) {
-        //                 $(this).select2('destroy').select2({
-        //                     theme: "bootstrap-5",
-        //                     width: $(this).data('width')
-        //                         ? $(this).data('width')
-        //                         : $(this).hasClass('w-100')
-        //                             ? '100%'
-        //                             : 'style',
-        //                     placeholder: $(this).data('placeholder'),
-        //                     dropdownParent: $('#reject-modal .modal-content')
-        //                 });
-        //             }
+                    if ($options.length === 0) {
+                        $(this).select2('destroy').select2({
+                            theme: "bootstrap-5",
+                            width: $(this).data('width')
+                                ? $(this).data('width')
+                                : $(this).hasClass('w-100')
+                                    ? '100%'
+                                    : 'style',
+                            placeholder: $(this).data('placeholder'),
+                            dropdownParent: $('#reject-modal .modal-content')
+                        });
+                    }
 
-        //             return;
-        //         }
+                    return;
+                }
 
-        //         // Re-init
-        //         $(this).select2({
-        //             theme: "bootstrap-5",
-        //             width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
-        //             placeholder: $( this ).data( 'placeholder' ),
-        //             dropdownParent: $('#reject-modal .modal-content')
-        //         });
-        //     });
-        // }
+                // Re-init
+                $(this).select2({
+                    theme: "bootstrap-5",
+                    width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
+                    placeholder: $( this ).data( 'placeholder' ),
+                    dropdownParent: $('#reject-modal .modal-content')
+                });
+            });
+        }
 
         function initSendRejectSelect2() {
             $('.select2bs4rejectout').each(function () {
@@ -865,16 +865,16 @@
         }
 
         Livewire.hook('message.processed', () => {
-            // initRejectSelect2();
+            initRejectSelect2();
             initSendRejectSelect2();
         });
 
         // Reinit Reject Modal Select2
-        // Livewire.on('reinitSelect2', () => {
-        //     setTimeout(() => {
-        //         initRejectSelect2();
-        //     }, 50);
-        // });
+        Livewire.on('reinitSelect2', () => {
+            setTimeout(() => {
+                initRejectSelect2();
+            }, 50);
+        });
 
         document.addEventListener("DOMContentLoaded", async function () {
             document.getElementById('scannedItemRejectIn').focus();

@@ -433,6 +433,19 @@ class RejectInOutController extends Controller
 
         return Excel::download(new RejectOutDetailExport($tanggal_awal, $tanggal_akhir, $tanggal, $no_transaksi, $tujuan, $kpno, $styleno, $color, $size), 'Report Reject In Out.xlsx');
     }
+
+    public function getDefectTypes() {
+        $defectTypes = DB::table("output_defect_types")->leftJoin(DB::raw("(select reject_type_id, count(id) total_reject from output_rejects where updated_at between '".date("Y-m-d", strtotime(date("Y-m-d").' -10 days'))." 00:00:00' and '".date("Y-m-d")." 23:59:59' group by reject_type_id) as rejects"), "rejects.reject_type_id", "=", "output_defect_types.id")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_type')->get();
+
+        return $defectTypes;
+    }
+
+    public function getDefectAreas() {
+        $defectAreas = DB::table("output_defect_areas")->leftJoin(DB::raw("(select reject_area_id, count(id) total_reject from output_rejects where updated_at between '".date("Y-m-d", strtotime(date("Y-m-d").' -10 days'))." 00:00:00' and '".date("Y-m-d")." 23:59:59' group by reject_area_id) as rejects"), "rejects.reject_area_id", "=", "output_defect_areas.id")->whereRaw("(hidden IS NULL OR hidden != 'Y')")->orderBy('defect_area')->get();
+
+        return $defectAreas;
+    }
+
     public function exportRejectInOut(Request $request) {
         return Excel::download(new RejectInOutExport($request->dateFrom, $request->dateTo), 'Report Reject In Out.xlsx');
     }

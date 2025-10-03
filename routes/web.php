@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/get-size', 'getSize')->name("get-size");
         Route::get('/get-defect-type', 'getDefectType')->name("get-defect-type");
         Route::get('/get-defect-area', 'getDefectArea')->name("get-defect-area");
+        Route::get('/get-defect-types', 'getDefectTypes')->name("get-defect-types");
+        Route::get('/get-defect-areas', 'getDefectAreas')->name("get-defect-areas");
         Route::get('/get-reject-out', 'getRejectOut')->name("get-reject-out");
         Route::get('/get-reject-out-total', 'getRejectOutTotal')->name("get-reject-out-total");
         Route::get('/get-reject-out-number', 'getRejectOutNumber')->name("get-reject-out-number");
