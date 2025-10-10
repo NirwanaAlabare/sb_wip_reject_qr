@@ -1594,6 +1594,8 @@
                 $("#btn-sent").addClass("btn-primary");
                 $("#btn-sent").removeClass("text-primary");
                 $("#btn-sent").addClass("text-light");
+
+                clearRejectOutSelectedList();
             } else {
                 $("#reject-out-table-sent-container").addClass("d-none");
                 $("#reject-out-table-wip-container").removeClass("d-none");
@@ -1607,6 +1609,8 @@
                 $("#btn-sent").addClass("btn-light");
                 $("#btn-sent").removeClass("text-light");
                 $("#btn-sent").addClass("text-primary");
+
+                clearRejectOutSelectedList();
             }
 
             outTableColumnAdjust();
