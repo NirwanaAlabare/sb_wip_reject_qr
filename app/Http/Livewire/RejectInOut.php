@@ -852,54 +852,54 @@ class RejectInOut extends Component
                                         break;
                                     case "reworked" :
                                         // Undo Reject
-                                        if ($scannedReject->output_type == "qc" || $scannedReject->output_type == "packing") {
-                                            $rejectTable = "";
-                                            $defectTable = "";
-                                            $undoTable = "";
-                                            switch ($scannedReject->output_type) {
-                                                case 'qc' :
-                                                    $rejectTable = "output_rejects";
-                                                    $defectTable = "output_defects";
-                                                    $undoTable = "output_undo";
+                                        // if ($scannedReject->output_type == "qc" || $scannedReject->output_type == "packing") {
+                                        //     $rejectTable = "";
+                                        //     $defectTable = "";
+                                        //     $undoTable = "";
+                                        //     switch ($scannedReject->output_type) {
+                                        //         case 'qc' :
+                                        //             $rejectTable = "output_rejects";
+                                        //             $defectTable = "output_defects";
+                                        //             $undoTable = "output_undo";
 
-                                                    break;
-                                                case 'packing' :
-                                                    $rejectTable = "output_rejects_packing";
-                                                    $defectTable = "output_defects_packing";
-                                                    $undoTable = "output_undo_packing";
+                                        //             break;
+                                        //         case 'packing' :
+                                        //             $rejectTable = "output_rejects_packing";
+                                        //             $defectTable = "output_defects_packing";
+                                        //             $undoTable = "output_undo_packing";
 
-                                                    break;
-                                            }
+                                        //             break;
+                                        //     }
 
-                                            $currentReject = DB::table($rejectTable)->where("id", $scannedReject->id)->first();
-                                            if ($currentReject) {
-                                                if ($currentReject->defect_id > 0) {
-                                                    DB::table($defectTable)->where("id", $currentReject->defect_id)->update(["defect_status" => "defect"]);
-                                                }
+                                        //     $currentReject = DB::table($rejectTable)->where("id", $scannedReject->id)->first();
+                                        //     if ($currentReject) {
+                                        //         if ($currentReject->defect_id > 0) {
+                                        //             DB::table($defectTable)->where("id", $currentReject->defect_id)->update(["defect_status" => "defect"]);
+                                        //         }
 
-                                                $deleteReject = DB::table($rejectTable)->where("id", $currentReject->id)->delete();
+                                        //         $deleteReject = DB::table($rejectTable)->where("id", $currentReject->id)->delete();
 
-                                                // Log Undo
-                                                if ($deleteReject) {
-                                                    DB::table($undoTable)->insert([
-                                                        'master_plan_id' => $currentReject->master_plan_id,
-                                                        'so_det_id' => $currentReject->so_det_id,
-                                                        'output_defect_id' => $currentReject->defect_id,
-                                                        'output_reject_id' => $currentReject->id,
-                                                        'kode_numbering' => $currentReject->kode_numbering,
-                                                        'keterangan' => 'reject',
-                                                        'defect_type_id' => $currentReject->reject_type_id,
-                                                        'defect_area_id' => $currentReject->reject_area_id,
-                                                        'defect_area_x' => $currentReject->reject_area_x,
-                                                        'defect_area_y' => $currentReject->reject_area_y,
-                                                        'created_by' => $currentReject->created_by,
-                                                        'undo_by' => Auth::user()->line_id,
-                                                        'created_at' => Carbon::now(),
-                                                        'updated_at' => Carbon::now()
-                                                    ]);
-                                                }
-                                            }
-                                        }
+                                        //         // Log Undo
+                                        //         if ($deleteReject) {
+                                        //             DB::table($undoTable)->insert([
+                                        //                 'master_plan_id' => $currentReject->master_plan_id,
+                                        //                 'so_det_id' => $currentReject->so_det_id,
+                                        //                 'output_defect_id' => $currentReject->defect_id,
+                                        //                 'output_reject_id' => $currentReject->id,
+                                        //                 'kode_numbering' => $currentReject->kode_numbering,
+                                        //                 'keterangan' => 'reject',
+                                        //                 'defect_type_id' => $currentReject->reject_type_id,
+                                        //                 'defect_area_id' => $currentReject->reject_area_id,
+                                        //                 'defect_area_x' => $currentReject->reject_area_x,
+                                        //                 'defect_area_y' => $currentReject->reject_area_y,
+                                        //                 'created_by' => $currentReject->created_by,
+                                        //                 'undo_by' => Auth::user()->line_id,
+                                        //                 'created_at' => Carbon::now(),
+                                        //                 'updated_at' => Carbon::now()
+                                        //             ]);
+                                        //         }
+                                        //     }
+                                        // }
 
                                         break;
                                     default :
@@ -1057,6 +1057,86 @@ class RejectInOut extends Component
                             }
 
                             OutputGudangStok::insert($rejectOutGudang);
+                        }
+
+                        // Undo Reject When it reworked
+                        else if ($this->rejectOutstatus == "reworked") {
+                            // Undo Reject
+                            $undoQcArray = [];
+                            $undoPackingArray = [];
+                            foreach ($currentRejectOutDetail as $rejectOutDetail) {
+                                $currentRejectIn = $rejectOutDetail->rejectIn;
+
+                                if ($currentRejectIn->output_type == "qc") {
+                                    array_push($undoQcArray, $currentRejectIn->reject_id);
+                                } else if ($currentRejectIn->output_type == "packing") {
+                                    array_push($undoPackingArray, $currentRejectIn->reject_id);
+                                }
+                            }
+
+                            // Undo QC
+                            if (count($undoQcArray) > 0) {
+                                $currentRejectsQc = DB::table("output_rejects")->whereIn("id", $undoQcArray)->get();
+                                foreach ($currentRejectsQc as $currentRejectQc) {
+                                    if ($currentRejectQc->defect_id > 0) {
+                                        DB::table("output_defects")->where("id", $currentRejectQc->defect_id)->update(["defect_status" => "defect"]);
+                                    }
+
+                                    $deleteReject = DB::table("output_rejects")->where("id", $currentRejectQc->id)->delete();
+
+                                    // Log Undo
+                                    if ($deleteReject) {
+                                        DB::table("output_undo")->insert([
+                                            'master_plan_id' => $currentRejectQc->master_plan_id,
+                                            'so_det_id' => $currentRejectQc->so_det_id,
+                                            'output_defect_id' => $currentRejectQc->defect_id,
+                                            'output_reject_id' => $currentRejectQc->id,
+                                            'kode_numbering' => $currentRejectQc->kode_numbering,
+                                            'keterangan' => 'reject',
+                                            'defect_type_id' => $currentRejectQc->reject_type_id,
+                                            'defect_area_id' => $currentRejectQc->reject_area_id,
+                                            'defect_area_x' => $currentRejectQc->reject_area_x,
+                                            'defect_area_y' => $currentRejectQc->reject_area_y,
+                                            'created_by' => $currentRejectQc->created_by,
+                                            'undo_by' => Auth::user()->line_id,
+                                            'created_at' => Carbon::now(),
+                                            'updated_at' => Carbon::now()
+                                        ]);
+                                    }
+                                }
+                            }
+
+                            // Undo Packing
+                            if (count($undoPackingArray) > 0) {
+                                $currentRejectsPacking = DB::table("output_rejects_packing")->whereIn("id", $undoPackingArray)->get();
+                                foreach ($currentRejectsPacking as $currentRejectPacking) {
+                                    if ($currentRejectPacking->defect_id > 0) {
+                                        DB::table("output_defects_packing")->where("id", $currentRejectPacking->defect_id)->update(["defect_status" => "defect"]);
+                                    }
+
+                                    $deleteReject = DB::table("output_rejects_packing")->where("id", $currentRejectPacking->id)->delete();
+
+                                    // Log Undo
+                                    if ($deleteReject) {
+                                        DB::table("output_undo_packing")->insert([
+                                            'master_plan_id' => $currentRejectPacking->master_plan_id,
+                                            'so_det_id' => $currentRejectPacking->so_det_id,
+                                            'output_defect_id' => $currentRejectPacking->defect_id,
+                                            'output_reject_id' => $currentRejectPacking->id,
+                                            'kode_numbering' => $currentRejectPacking->kode_numbering,
+                                            'keterangan' => 'reject',
+                                            'defect_type_id' => $currentRejectPacking->reject_type_id,
+                                            'defect_area_id' => $currentRejectPacking->reject_area_id,
+                                            'defect_area_x' => $currentRejectPacking->reject_area_x,
+                                            'defect_area_y' => $currentRejectPacking->reject_area_y,
+                                            'created_by' => $currentRejectPacking->created_by,
+                                            'undo_by' => Auth::user()->line_id,
+                                            'created_at' => Carbon::now(),
+                                            'updated_at' => Carbon::now()
+                                        ]);
+                                    }
+                                }
+                            }
                         }
 
                         $this->rejectOutSelectedList = [];
