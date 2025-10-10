@@ -1292,7 +1292,7 @@
             scrollY: '300px',
             scrollX: '300px',
             scrollCollapse: true,
-            paging: false,
+            paging: true,
             ajax: {
                 url: '{{ route('get-reject-out') }}',
                 dataType: 'json',
