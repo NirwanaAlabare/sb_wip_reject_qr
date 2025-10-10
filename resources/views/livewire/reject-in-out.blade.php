@@ -132,7 +132,7 @@
                                                 @endphp
                                                 <tr class="text-center align-middle">
                                                     <td>{{ $rejectInList->firstItem() + $loop->index }}</td>
-                                                    <td>{{ $rejectIn->kode_numbering }}</td>
+                                                    <td disabled>{{ $rejectIn->kode_numbering }}</td>
                                                     <td>{{ $rejectIn->reject_time }}</td>
                                                     <td>{{ strtoupper(str_replace("_", " ", $rejectIn->sewing_line)) }}</td>
                                                     <td>{{ $rejectIn->ws }}<br>{{ $rejectIn->style }}<br>{{ $rejectIn->color }}</td>
@@ -1359,6 +1359,10 @@
                     }
                 },
                 {
+                    targets: [1],
+                    className: "disabled"
+                },
+                {
                     targets: [2],
                     render: (data, type, row, meta) => {
                         return formatDateTime(data);
@@ -1841,6 +1845,10 @@
                     }
                 },
                 {
+                    targets: [3],
+                    className: "disabled"
+                },
+                {
                     targets: [8],
                     render: (data, type, row, meta) => {
                         let textColor = '';
@@ -2128,6 +2136,10 @@
                 },
             ],
             columnDefs: [
+                {
+                    targets: [0],
+                    className: "disabled"
+                },
                 {
                     targets: [2],
                     render: (data, type, row, meta) => {
