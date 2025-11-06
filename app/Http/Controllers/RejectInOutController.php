@@ -340,7 +340,7 @@ class RejectInOutController extends Controller
             whereRaw("
                 (
                     output_reject_in.id IS NOT NULL
-                    ".($request->line ? "AND (CASE WHEN output_reject_in.output_type = 'packing' THEN master_plan_packing.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN master_plan_finish.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qc' THEN master_plan.sewing_line ELSE null END) END) END) LIKE '%".$request->line."%'" : "")."
+                    ".($request->line ? "AND (CASE WHEN output_reject_in.output_type = 'packing' THEN master_plan.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN master_plan.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qc' THEN master_plan.sewing_line ELSE null END) END) END) LIKE '%".$request->line."%'" : "")."
                     ".($request->departemen && $request->departemen != "all" ? "AND output_reject_in.output_type = '".$request->departemen."'" : "")."
                 )
             ")->
@@ -394,7 +394,7 @@ class RejectInOutController extends Controller
             whereRaw("
                 (
                     output_reject_in.id IS NOT NULL
-                    ".($request->line ? "AND (CASE WHEN output_reject_in.output_type = 'packing' THEN master_plan_packing.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN master_plan_finish.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qc' THEN master_plan.sewing_line ELSE null END) END) END) LIKE '%".$request->line."%'" : "")."
+                    ".($request->line ? "AND (CASE WHEN output_reject_in.output_type = 'packing' THEN master_plan.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qcf' THEN master_plan.sewing_line ELSE (CASE WHEN output_reject_in.output_type = 'qc' THEN master_plan.sewing_line ELSE null END) END) END) LIKE '%".$request->line."%'" : "")."
                     ".($request->departemen && $request->departemen != "all" ? "AND output_reject_in.output_type = '".$request->departemen."'" : "")."
                 )
             ")->

@@ -1060,7 +1060,7 @@ class RejectInOut extends Component
                         }
 
                         // Undo Reject When it reworked
-                        else if ($this->rejectOutstatus == "reworked") {
+                        else if ($this->rejectOutStatus == "reworked") {
                             // Undo Reject
                             $undoQcArray = [];
                             $undoPackingArray = [];
