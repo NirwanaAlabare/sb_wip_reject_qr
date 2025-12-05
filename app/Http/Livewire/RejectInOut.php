@@ -1002,6 +1002,12 @@ class RejectInOut extends Component
     public function sendRejectOut() {
         if ($this->rejectOutSelectedList && count($this->rejectOutSelectedList) > 0) {
             if ($this->rejectOutStatus == 'reworked' && $this->rejectOutLine || $this->rejectOutStatus != 'reworked' && $this->rejectOutTujuan) {
+                // Check no transaksi
+                $checkNoTrans = RejectOut::where("no_transaksi", $this->rejectOutNoTransaksi);
+                if ($checkNoTrans) {
+                    return  $this->emit('alert', 'error',  "No. Transaksi sudah ada. Harap refresh No. Transaksi.");
+                }
+
                 // Create Reject Out Parent
                 $rejectOut = RejectOut::create([
                     "tanggal" => $this->rejectOutTanggal,
