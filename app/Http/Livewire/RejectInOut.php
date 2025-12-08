@@ -1003,7 +1003,7 @@ class RejectInOut extends Component
         if ($this->rejectOutSelectedList && count($this->rejectOutSelectedList) > 0) {
             if ($this->rejectOutStatus == 'reworked' && $this->rejectOutLine || $this->rejectOutStatus != 'reworked' && $this->rejectOutTujuan) {
                 // Check no transaksi
-                $checkNoTrans = RejectOut::where("no_transaksi", $this->rejectOutNoTransaksi);
+                $checkNoTrans = DB::table("output_reject_out")->where("no_transaksi", $this->rejectOutNoTransaksi)->first();
                 if ($checkNoTrans) {
                     return  $this->emit('alert', 'error',  "No. Transaksi sudah ada. Harap refresh No. Transaksi.");
                 }
