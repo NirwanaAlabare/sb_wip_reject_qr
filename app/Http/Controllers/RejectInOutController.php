@@ -405,6 +405,9 @@ class RejectInOutController extends Controller
     }
 
     public function exportRejectWip(Request $request) {
+        ini_set("max_execution_time", 3600);
+        ini_set("memory_limit", '2048M');
+        
         $kode_numbering = $request->kode_numbering;
         $waktu = $request->waktu;
         $department = $request->department;
@@ -421,6 +424,9 @@ class RejectInOutController extends Controller
     }
 
     public function exportRejectOutDetail(Request $request) {
+        ini_set("max_execution_time", 3600);
+        ini_set("memory_limit", '2048M');
+
         $tanggal_awal = $request->tanggal_awal;
         $tanggal_akhir = $request->tanggal_akhir;
         $tanggal = $request->tanggal;
@@ -447,6 +453,9 @@ class RejectInOutController extends Controller
     }
 
     public function exportRejectInOut(Request $request) {
+        ini_set("max_execution_time", 3600);
+        ini_set("memory_limit", '2048M');
+
         return Excel::download(new RejectInOutExport($request->dateFrom, $request->dateTo), 'Report Reject In Out.xlsx');
     }
 }
