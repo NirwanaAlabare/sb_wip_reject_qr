@@ -35,23 +35,23 @@ class RejectOutDetailExport implements FromView, ShouldAutoSize
 
     public function view(): View
     {
-        $rangeFilter = " tanggal is not null ";
+        $rangeFilter = " date(output_reject_out_detail.created_at) is not null ";
         if ($this->tanggal_awal) {
-            $rangeFilter .= "and tanggal >= '".$this->tanggal_awal."'";
+            $rangeFilter .= "and date(output_reject_out_detail.created_at) >= '".$this->tanggal_awal."'";
         }
         if ($this->tanggal_akhir) {
-            $rangeFilter .= "and tanggal <= '".$this->tanggal_akhir."'";
+            $rangeFilter .= "and date(output_reject_out_detail.created_at) <= '".$this->tanggal_akhir."'";
         }
 
-        $additionalFilter = " output_reject_out.id is not null ";
+        $additionalFilter = " output_reject_out_detail.id is not null ";
         if ($this->tanggal) {
-            $additionalFilter .= " and output_reject_out.tanggal LIKE '%".$this->tanggal."%'";
+            $additionalFilter .= " and date(output_reject_out_detail.created_at) LIKE '%".$this->tanggal."%'";
         }
         if ($this->no_transaksi) {
             $additionalFilter .= " and output_reject_out.no_transaksi LIKE '%".$this->no_transaksi."%'";
         }
         if ($this->tujuan) {
-            $additionalFilter .= " and output_reject_out.tujuan LIKE '%".$this->tujuan."%'";
+            $additionalFilter .= " and COALESCE(output_reject_out.tujuan, CASE WHEN output_reject_in.status = 'rejected' THEN 'GUDANG REJECT' else '-' END) LIKE '%".$this->tujuan."%'";
         }
         if ($this->kpno) {
             $additionalFilter .= " and act_costing.kpno LIKE '%".$this->kpno."%'";
@@ -66,10 +66,10 @@ class RejectOutDetailExport implements FromView, ShouldAutoSize
             $additionalFilter .= " and act_costing.size LIKE '%".$this->size."%'";
         }
 
-        $rejectOut = RejectOut::selectRaw("
-                concat(output_reject_out.id, act_costing.id, so_det.color, so_det.size) group_key
+        $rejectOut = RejectOutDetail::selectRaw("
+                concat(output_reject_out_detail.reject_out_id, act_costing.id, so_det.color, so_det.size) group_key
             ")->
-            leftJoin("output_reject_out_detail", "output_reject_out_detail.reject_out_id", "=", "output_reject_out.id")->
+            leftJoin("output_reject_out", "output_reject_out.id", "=", "output_reject_out_detail.reject_out_id")->
             leftJoin("output_reject_in", "output_reject_in.id", "=", "output_reject_out_detail.reject_in_id")->
             leftJoin("so_det", "so_det.id", "=", "output_reject_in.so_det_id")->
             leftJoin("so", "so.id", "=", "so_det.id_so")->
@@ -78,14 +78,14 @@ class RejectOutDetailExport implements FromView, ShouldAutoSize
             whereRaw($rangeFilter)->
             whereRaw($additionalFilter)->
             whereRaw("output_reject_out_detail.updated_at > (NOW() - INTERVAL 6 MONTH)")->
-            groupBy("output_reject_out.id", "act_costing.id", "so_det.color", "so_det.size")->
+            groupBy("output_reject_out_detail.reject_out_id", "act_costing.id", "so_det.color", "so_det.size")->
             pluck("group_key")->
             toArray();
 
         $rejectOutDetail = RejectOutDetail::selectRaw("
-            output_reject_out.tanggal,
+            date(output_reject_out_detail.created_at) as tanggal,
             output_reject_out.no_transaksi,
-            output_reject_out.tujuan,
+            COALESCE(output_reject_out.tujuan, CASE WHEN output_reject_in.status = 'rejected' THEN 'GUDANG REJECT' else '-' END) as tujuan,
             output_reject_in.kode_numbering,
             act_costing.kpno,
             act_costing.styleno,
@@ -108,8 +108,8 @@ class RejectOutDetailExport implements FromView, ShouldAutoSize
         leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_reject_in_detail.reject_area_id")->
         leftJoin("output_reject_in_detail_position", "output_reject_in_detail_position.reject_in_detail_id", "=", "output_reject_in_detail.id")->
         where("output_reject_in.process", "sent")->
-        whereIn(DB::raw("concat(output_reject_out.id, act_costing.id, so_det.color, so_det.size)"), $rejectOut)->
-        whereRaw("output_reject_out.updated_at > (NOW() - INTERVAL 6 MONTH)")->
+        whereIn(DB::raw("concat(output_reject_out_detail.reject_out_id, act_costing.id, so_det.color, so_det.size)"), $rejectOut)->
+        whereRaw("output_reject_out_detail.updated_at > (NOW() - INTERVAL 6 MONTH)")->
         groupBy("output_reject_out_detail.id")->
         get();
 

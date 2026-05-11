@@ -98,20 +98,20 @@ class RejectInOutController extends Controller
 
     public function getRejectOut(Request $request) {
         if ($request->process == "sent") {
-            $rangeFilter = " tanggal is not null ";
+            $rangeFilter = " output_reject_out_detail.created_at is not null ";
             if ($request->tanggal_awal) {
-                $rangeFilter .= "and tanggal >= '".$request->tanggal_awal."'";
+                $rangeFilter .= "and date(output_reject_out_detail.created_at) >= '".$request->tanggal_awal."'";
             }
 
             if ($request->tanggal_akhir) {
-                $rangeFilter .= "and tanggal <= '".$request->tanggal_akhir."'";
+                $rangeFilter .= "and date(output_reject_out_detail.created_at) <= '".$request->tanggal_akhir."'";
             }
 
-            $rejectOut = RejectOut::selectRaw("
-                output_reject_out.id,
-                output_reject_out.tanggal,
+            $rejectOut = RejectOutDetail::selectRaw("
+                output_reject_out_detail.reject_out_id as id,
+                date(output_reject_out_detail.created_at) as tanggal,
                 output_reject_out.no_transaksi,
-                output_reject_out.tujuan,
+                COALESCE(output_reject_out.tujuan, CASE WHEN output_reject_in.status = 'rejected' THEN 'GUDANG REJECT' else '-' END) as tujuan,
                 act_costing.id as act_costing_id,
                 act_costing.kpno,
                 act_costing.styleno,
@@ -119,16 +119,17 @@ class RejectInOutController extends Controller
                 so_det.size,
                 COUNT(output_reject_out_detail.id) qty
             ")->
-            leftJoin("output_reject_out_detail", "output_reject_out_detail.reject_out_id", "=", "output_reject_out.id")->
+            leftJoin("output_reject_out", "output_reject_out_detail.reject_out_id", "=", "output_reject_out.id")->
             leftJoin("output_reject_in", "output_reject_in.id", "=", "output_reject_out_detail.reject_in_id")->
             leftJoin("so_det", "so_det.id", "=", "output_reject_in.so_det_id")->
             leftJoin("so", "so.id", "=", "so_det.id_so")->
             leftJoin("act_costing", "act_costing.id", "=", "so.id_cost")->
             where("output_reject_in.process", $request->process)->
             whereRaw($rangeFilter)->
-            whereRaw("output_reject_out_detail.updated_at > (NOW() - INTERVAL 6 MONTH)")->
-            groupBy("output_reject_out.id", "act_costing.id", "so_det.color", "so_det.size")->
+            whereRaw("output_reject_out_detail.created_at > (NOW() - INTERVAL 6 MONTH)")->
+            groupBy("output_reject_out_detail.reject_out_id", "act_costing.id", "so_det.color", "so_det.size")->
             get();
+
         } else {
             $rejectOut = RejectIn::selectRaw("
                 output_reject_in.id,
@@ -169,23 +170,23 @@ class RejectInOutController extends Controller
     }
 
     public function getRejectOutTotal(Request $request) {
-        $rangeFilter = " tanggal is not null ";
+        $rangeFilter = " output_reject_out_detail.created_at is not null ";
         if ($request->tanggal_awal) {
-            $rangeFilter .= "and tanggal >= '".$request->tanggal_awal."'";
+            $rangeFilter .= "and date(output_reject_out_detail.created_at) >= '".$request->tanggal_awal."'";
         }
         if ($request->tanggal_akhir) {
-            $rangeFilter .= "and tanggal <= '".$request->tanggal_akhir."'";
+            $rangeFilter .= "and date(output_reject_out_detail.created_at) <= '".$request->tanggal_akhir."'";
         }
 
-        $additionalFilter = " output_reject_out.id is not null ";
+        $additionalFilter = " output_reject_out_detail.id is not null ";
         if ($request->tanggal) {
-            $additionalFilter .= " and output_reject_out.tanggal LIKE '%".$request->tanggal."%'";
+            $additionalFilter .= " and date(output_reject_out_detail.created_at) LIKE '%".$request->tanggal."%'";
         }
         if ($request->no_transaksi) {
             $additionalFilter .= " and output_reject_out.no_transaksi LIKE '%".$request->no_transaksi."%'";
         }
         if ($request->tujuan) {
-            $additionalFilter .= " and output_reject_out.tujuan LIKE '%".$request->tujuan."%'";
+            $additionalFilter .= " and COALESCE(output_reject_out.tujuan, CASE WHEN output_reject_in.status = 'rejected' THEN 'GUDANG REJECT' else '-' END) LIKE '%".$request->tujuan."%'";
         }
         if ($request->kpno) {
             $additionalFilter .= " and act_costing.kpno LIKE '%".$request->kpno."%'";
@@ -200,11 +201,11 @@ class RejectInOutController extends Controller
             $additionalFilter .= " and act_costing.size LIKE '%".$request->size."%'";
         }
 
-        $rejectOut = RejectOut::selectRaw("
-                output_reject_out.id,
-                output_reject_out.tanggal,
+        $rejectOut = RejectOutDetail::selectRaw("
+                output_reject_out_detail.reject_out_id as id,
+                date(output_reject_out_detail.created_at) as tanggal,
                 output_reject_out.no_transaksi,
-                output_reject_out.tujuan,
+                COALESCE(output_reject_out.tujuan, CASE WHEN output_reject_in.status = 'rejected' THEN 'GUDANG REJECT' else '-' END) as tujuan,
                 act_costing.id as act_costing_id,
                 act_costing.kpno,
                 act_costing.styleno,
@@ -212,7 +213,7 @@ class RejectInOutController extends Controller
                 so_det.size,
                 COUNT(output_reject_out_detail.id) qty
             ")->
-            leftJoin("output_reject_out_detail", "output_reject_out_detail.reject_out_id", "=", "output_reject_out.id")->
+            leftJoin("output_reject_out", "output_reject_out_detail.reject_out_id", "=", "output_reject_out.id")->
             leftJoin("output_reject_in", "output_reject_in.id", "=", "output_reject_out_detail.reject_in_id")->
             leftJoin("so_det", "so_det.id", "=", "output_reject_in.so_det_id")->
             leftJoin("so", "so.id", "=", "so_det.id_so")->
@@ -220,8 +221,8 @@ class RejectInOutController extends Controller
             where("output_reject_in.process", "sent")->
             whereRaw($rangeFilter)->
             whereRaw($additionalFilter)->
-            whereRaw("output_reject_out_detail.updated_at > (NOW() - INTERVAL 6 MONTH)")->
-            groupBy("output_reject_out.id", "act_costing.id", "so_det.color", "so_det.size")->
+            whereRaw("output_reject_out_detail.created_at > (NOW() - INTERVAL 6 MONTH)")->
+            groupBy("output_reject_out_detail.reject_out_id", "act_costing.id", "so_det.color", "so_det.size")->
             get();
 
         return $rejectOut->sum("qty");
@@ -229,9 +230,9 @@ class RejectInOutController extends Controller
 
     public function getRejectOutDetail(Request $request) {
         $rejectOutDetail = RejectOutDetail::selectRaw("
-            output_reject_out.tanggal,
+            date(output_reject_out_detail.created_at) as tanggal,
             output_reject_out.no_transaksi,
-            output_reject_out.tujuan,
+            COALESCE(output_reject_out.tujuan, CASE WHEN output_reject_in.status = 'rejected' THEN 'GUDANG REJECT' else '-' END) as tujuan,
             output_reject_in.kode_numbering,
             act_costing.kpno,
             act_costing.styleno,
@@ -259,7 +260,7 @@ class RejectInOutController extends Controller
         where("act_costing.id", $request->act_costing_id)->
         where("so_det.color", $request->color)->
         where("so_det.size", $request->size)->
-        whereRaw("output_reject_out.updated_at > (NOW() - INTERVAL 6 MONTH)")->
+        whereRaw("output_reject_out_detail.created_at > (NOW() - INTERVAL 6 MONTH)")->
         groupBy("output_reject_out_detail.id")->
         get();
 
@@ -407,7 +408,7 @@ class RejectInOutController extends Controller
     public function exportRejectWip(Request $request) {
         ini_set("max_execution_time", 3600);
         ini_set("memory_limit", '2048M');
-        
+
         $kode_numbering = $request->kode_numbering;
         $waktu = $request->waktu;
         $department = $request->department;
