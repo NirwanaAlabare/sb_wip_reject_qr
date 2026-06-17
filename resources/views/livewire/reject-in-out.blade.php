@@ -53,9 +53,10 @@
                                 <div class="col-md-4">
                                     <select class="form-select form-select-sm" name="rejectInOutputType" id="reject-in-output-type" wire:model="rejectInOutputType">
                                         <option value="all">ALL</option>
-                                        <option value="qc">QC</option>
+                                        <option value="qc">QC ENDLINE</option>
                                         {{-- <option value="qcf">QC FINISHING</option> --}}
-                                        <option value="packing">FINISHING</option>
+                                        <option value="packing">QC FINISHING</option>
+                                        <option value="finishing_proses">FINISHING PROSES</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
@@ -139,7 +140,18 @@
                                                     <td>{{ $rejectIn->size }}</td>
                                                     <td>{{ $rejectIn->defect_type }}</td>
                                                     <td>{{ $rejectIn->reject_qty }}</td>
-                                                    <td class="fw-bold {{ $rejectIn->output_type == 'qc' ? 'text-danger' : ($rejectIn->output_type == 'qcf' ? 'text-pink' : 'text-success') }}">{{ $rejectIn->output_type == "packing" ? "FINISHING" : strtoupper($rejectIn->output_type) }}</td>
+                                                    <td class="fw-bold {{
+                                                        $rejectIn->output_type == 'qc' ? 'text-danger' :
+                                                        ($rejectIn->output_type == 'qcf' ? 'text-pink' : 'text-success')
+                                                    }}">
+                                                        {{
+                                                            $rejectIn->output_type == 'qc' ? 'QC ENDLINE' :
+                                                            ($rejectIn->output_type == 'packing' ? 'QC FINISHING' :
+                                                            ($rejectIn->output_type == 'finishing_proses' ? 'FINISHING PROSES' :
+                                                            strtoupper(str_replace('_', ' ', $rejectIn->output_type))))
+                                                        }}
+                                                    </td>
+                                                    {{-- <td class="fw-bold {{ $rejectIn->output_type == 'qc' ? 'text-danger' : ($rejectIn->output_type == 'qcf' ? 'text-pink' : 'text-success') }}">{{ $rejectIn->output_type == "packing" ? "FINISHING" : strtoupper($rejectIn->output_type) }}</td> --}}
                                                 </tr>
                                             @endforeach
                                         @endif
