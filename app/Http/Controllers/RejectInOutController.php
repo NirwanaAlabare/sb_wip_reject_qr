@@ -149,7 +149,7 @@ class RejectInOutController extends Controller
                 GROUP_CONCAT(output_defect_areas.defect_area SEPARATOR ' , ') defect_areas,
                 GROUP_CONCAT(CONCAT_WS(' // ', output_defect_types.defect_type, output_reject_in_detail.reject_area_x, output_reject_in_detail.reject_area_y) SEPARATOR ' | ') reject_area_position,
                 master_plan.gambar,
-                CONCAT(act_costing.id, so_det.color, so_det.size, output_reject_in.grade) grouping
+                CONCAT(act_costing.id, so_det.color, so_det.size, output_reject_in.grade) `grouping`
             ")->
             leftJoin("so_det", "so_det.id", "=", "output_reject_in.so_det_id")->
             leftJoin("so", "so.id", "=", "so_det.id_so")->

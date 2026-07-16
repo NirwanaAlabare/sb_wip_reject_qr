@@ -34,7 +34,15 @@
         <tr>
             <td style="border: 1px solid black;">{{ $reject->kode_numbering }}</td>
             <td style="border: 1px solid black;">{{ $reject->updated_at }}</td>
-            <td style="border: 1px solid black;">{{ $reject->output_type }}</td>
+            <td style="border: 1px solid 000;">
+                {{
+                    $reject->output_type == 'qc' ? 'QC ENDLINE' :
+                    ($reject->output_type == 'packing' ? 'QC FINISHING' :
+                    ($reject->output_type == 'finishing_proses' ? 'FINISHING PROSES' :
+                    ($reject->output_type == 'qc_fns_pck_return' ? 'QC FNS - PCK RETURN' :
+                    $reject->output_type)))
+                }}
+            </td>
             <td style="border: 1px solid black;">{{ $reject->username }}</td>
             <td style="border: 1px solid black;">{{ $reject->kpno }}</td>
             <td style="border: 1px solid black;">{{ $reject->styleno }}</td>

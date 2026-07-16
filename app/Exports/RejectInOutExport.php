@@ -52,6 +52,8 @@ class RejectInOutExport implements FromView, ShouldAutoSize
             leftJoin("output_rejects_packing", "output_rejects_packing.id", "=", "output_reject_in.reject_id")->
             // Reject Finishing
             leftJoin("output_check_finishing", "output_check_finishing.id", "=", "output_reject_in.reject_id")->
+            leftJoin("output_secondary_out", "output_secondary_out.id", "=", "output_reject_in.reject_id")->
+            leftJoin("output_reject_packing_po_return", "output_reject_packing_po_return.id", "=", "output_reject_in.reject_id")->
             // Reject Detail
             leftJoin("output_defect_types", "output_defect_types.id", "=", "output_reject_in.reject_type_id")->
             leftJoin("output_defect_areas", "output_defect_areas.id", "=", "output_reject_in.reject_area_id")->
