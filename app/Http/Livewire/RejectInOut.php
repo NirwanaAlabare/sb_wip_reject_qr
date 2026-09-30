@@ -721,6 +721,7 @@ class RejectInOut extends Component
                     userpassword.username,
                     userpassword.line_id,
                     output_reject_in.id defect_in_id,
+                    null as secondary_id,
                     'qc' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_rejects.created_by")->
@@ -759,6 +760,7 @@ class RejectInOut extends Component
                         userpassword.username,
                         userpassword.line_id,
                         output_reject_in.id defect_in_id,
+                        null as secondary_id,
                         'qcf' output_type
                     ")->
                     leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_check_finishing.created_by")->
@@ -798,6 +800,7 @@ class RejectInOut extends Component
                             userpassword.username,
                             userpassword.line_id,
                             output_reject_in.id defect_in_id,
+                            null as secondary_id,
                             'packing' output_type
                         ")->
                         leftJoin("userpassword", "userpassword.username", "=", "output_rejects_packing.created_by")->
@@ -836,6 +839,7 @@ class RejectInOut extends Component
                                 userpassword.username,
                                 userpassword.line_id,
                                 output_reject_in.id defect_in_id,
+                                null as secondary_id,
                                 'finishing_proses' output_type
                             ")->
                             leftJoin("userpassword", "userpassword.line_id", "=", "output_secondary_out_reject.created_by")->
@@ -876,6 +880,7 @@ class RejectInOut extends Component
                                     userpassword.username,
                                     userpassword.line_id,
                                     output_reject_in.id defect_in_id,
+                                    null as secondary_id,
                                     'qc_fns_pck_return' output_type
                                 ")->
                                 leftJoin("output_rfts_packing_po_return", "output_rfts_packing_po_return.id", "=", "output_reject_packing_po_return.output_rfts_packing_po_return_id")->
@@ -920,6 +925,7 @@ class RejectInOut extends Component
                     userpassword.username,
                     userpassword.line_id,
                     output_reject_in.id defect_in_id,
+                    null as secondary_id,
                     'packing' output_type
                 ")->
                 leftJoin("userpassword", "userpassword.username", "=", "output_rejects_packing.created_by")->
@@ -955,6 +961,7 @@ class RejectInOut extends Component
                     userpassword.username,
                     userpassword.line_id,
                     output_reject_in.id defect_in_id,
+                    null as secondary_id,
                     'qcf' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_check_finishing.created_by")->
@@ -991,6 +998,7 @@ class RejectInOut extends Component
                     userpassword.username,
                     userpassword.line_id,
                     output_reject_in.id defect_in_id,
+                    output_secondary_in.id as secondary_id,
                     'finishing_proses' output_type
                 ")->
                 leftJoin("userpassword", "userpassword.line_id", "=", "output_secondary_out_reject.created_by")->
@@ -1028,6 +1036,7 @@ class RejectInOut extends Component
                     userpassword.username,
                     userpassword.line_id,
                     output_reject_in.id defect_in_id,
+                    null as secondary_id,
                     'qc_fns_pck_return' output_type
                 ")->
                 leftJoin("output_rfts_packing_po_return", "output_rfts_packing_po_return.id", "=", "output_reject_packing_po_return.output_rfts_packing_po_return_id")->
@@ -1064,6 +1073,7 @@ class RejectInOut extends Component
                     userpassword.username,
                     userpassword.line_id,
                     output_reject_in.id defect_in_id,
+                    null as secondary_id,
                     'qc' output_type
                 ")->
                 leftJoin("user_sb_wip", "user_sb_wip.id", "=", "output_rejects.created_by")->
@@ -1459,7 +1469,8 @@ class RejectInOut extends Component
                                         output_secondary_out_reject.defect_type_id AS reject_type_id,
                                         output_secondary_out_reject.defect_area_id AS reject_area_id,
                                         output_secondary_out_reject.defect_area_x AS reject_area_x,
-                                        output_secondary_out_reject.defect_area_y AS reject_area_y
+                                        output_secondary_out_reject.defect_area_y AS reject_area_y,
+                                        output_secondary_in.secondary_id
                                     ")
                                     ->leftJoin('output_secondary_out', 'output_secondary_out.id', '=', 'output_secondary_out_reject.secondary_out_id')
                                     ->leftJoin('output_secondary_in', 'output_secondary_in.id', '=', 'output_secondary_out.secondary_in_id')
@@ -1480,6 +1491,7 @@ class RejectInOut extends Component
                                         DB::table("output_undo_secondary_out")->insert([
                                             'master_plan_id' => $currentRejectPacking->master_plan_id,
                                             'so_det_id' => $currentRejectPacking->so_det_id,
+                                            'secondary_id' => $currentRejectPacking->secondary_id,
                                             'output_defect_id' => $currentRejectPacking->defect_id,
                                             'output_reject_id' => $currentRejectPacking->id,
                                             'kode_numbering' => $currentRejectPacking->kode_numbering,
